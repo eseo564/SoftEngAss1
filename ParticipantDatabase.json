@@ -1,0 +1,47 @@
+[
+	{
+		"userID": -1,
+		"name": "THIS IS A PLACEHOLDER NAME",
+		"email": "placeholder@mtroyal.ca"
+	},
+	{
+		"userID": 0,
+		"name": "John Doe",
+		"email": "fake.email@microslop.com"
+	},
+	{
+		"userID": 1,
+		"name": "Jane Doe",
+		"email": "jane.doe@email.com"
+	},
+	{
+		"userID": 2,
+		"name": "Gru",
+		"email": "minions@gmail.com"
+	},
+	{
+		"userID": 3,
+		"name": "Edward Smith",
+		"email": "ed.smith.1969@gmail.com"
+	},
+	{
+		"userID": 4,
+		"name": "Tiara Misu",
+		"email": "food@gmail.com"
+	},
+	{
+		"userID": 5,
+		"name": "dfghjkioiuyhgfvbnmjkiuyhgbv nmjkuiy",
+		"email": "qwertyuiop@gmail.com"
+	},
+	{
+		"userID": 6,
+		"name": "Paul Won",
+		"email": "Paul.won.1930@gmail.com"
+	},
+	{
+		"userID": 7,
+		"name": "Nicholas Christie",
+		"email": "nchri421@mtroyal.ca"
+	}
+]
