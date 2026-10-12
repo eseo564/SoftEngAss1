@@ -1,0 +1,23 @@
+[
+    {
+        "eventID": 1,
+        "title": "Pottery Workshop",
+        "location": "Room A",
+        "startTime": "2026-10-20T18:00:00",
+        "capacity": 2
+    },
+    {
+        "eventID": 2,
+        "title": "Board Game Night",
+        "location": "Room B",
+        "startTime": "2026-10-25T18:00:00",
+        "capacity": 3
+    },
+    {
+        "eventID": 3,
+        "title": "Photography Walk",
+        "location": "Campus Park",
+        "startTime": "2026-11-01T10:00:00",
+        "capacity": 2
+    }
+]
