@@ -1,23 +1,20 @@
 [
     {
+        "registrationID": 1,
         "eventID": 1,
-        "title": "Pottery Workshop",
-        "location": "Room A",
-        "startTime": "2026-10-20T18:00:00",
-        "capacity": 2
+        "userID": 101,
+        "registeredAt": "2026-10-10T12:00:00"
     },
     {
+        "registrationID": 2,
+        "eventID": 1,
+        "userID": 102,
+        "registeredAt": "2026-10-10T12:05:00"
+    },
+    {
+        "registrationID": 3,
         "eventID": 2,
-        "title": "Board Game Night",
-        "location": "Room B",
-        "startTime": "2026-10-25T18:00:00",
-        "capacity": 3
-    },
-    {
-        "eventID": 3,
-        "title": "Photography Walk",
-        "location": "Campus Park",
-        "startTime": "2026-11-01T10:00:00",
-        "capacity": 2
+        "userID": 103,
+        "registeredAt": "2026-10-10T12:10:00"
     }
 ]
