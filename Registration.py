@@ -1,3 +1,4 @@
+```python
 import json
 
 
@@ -46,30 +47,75 @@ def loadDatabase():
     ]
 
 
+# 1. Check if an event ID exists.
+def eventExists(eventID: int, events: list) -> bool:
+    for event in events:
+        if event.eventID == eventID:
+            return True
+    return False
+
+
+# 2. Check if a participant ID exists.
+def participantExists(userID: int, participants: list) -> bool:
+    for participant in participants:
+        if participant.userID == userID:
+            return True
+    return False
+
+
+# 3. Check if a registration is allowed.
 def registrationChecker(
+    eventID: int,
+    registrations: list[Registration],
+    events: list,
+    currentTime: str
+) -> bool:
+
+    # Find the event.
+    event = None
+    for e in events:
+        if e.eventID == eventID:
+            event = e
+            break
+
+    if event is None:
+        return False
+
+    # Check capacity.
+    count = 0
+    for registration in registrations:
+        if registration.eventID == eventID:
+            count += 1
+
+    if count >= event.capacity:
+        return False
+
+    # Check event start time.
+    if event.startTime <= currentTime:
+        return False
+
+    return True
+
+
+# 4. Check whether a registration ID already exists.
+def registrationExists(
     registrationID: int,
     registrations: list[Registration]
 ) -> bool:
+
     for registration in registrations:
         if registration.registrationID == registrationID:
-            return True
+            raise ValueError("Registration already exists!")
+
     return False
 
 
-def registrationExists(
-    eventID: int,
-    userID: int,
-    registrations: list[Registration]
-) -> bool:
-    for registration in registrations:
-        if (
-            registration.eventID == eventID
-            and registration.userID == userID
-        ):
-            return True
-    return False
+# 5. Check whether a time is in the future.
+def timeValid(time: str, currentTime: str) -> bool:
+    return time > currentTime
 
 
+# Register a participant for an event.
 def registerEvent(
     eventID: int,
     userID: int,
@@ -78,46 +124,33 @@ def registerEvent(
     registrations: list[Registration],
     currentTime: str
 ) -> Registration:
-    # Check event exists.
-    event = None
-    for e in events:
-        if e.eventID == eventID:
-            event = e
-            break
 
-    assert event is not None, "Event does not exist"
+    # Check event and participant.
+    assert eventExists(eventID, events), "Event does not exist"
+    assert participantExists(userID, participants), (
+        "Participant does not exist"
+    )
 
-    # Check participant exists.
-    participant = None
-    for p in participants:
-        if p.userID == userID:
-            participant = p
-            break
+    # Check whether the event has space and has not started.
+    assert registrationChecker(
+        eventID, registrations, events, currentTime
+    ), "Event is full or has already started"
 
-    assert participant is not None, "Participant does not exist"
-
-    # Check duplicate registration.
-    assert not registrationExists(
-        eventID, userID, registrations
-    ), "Participant already registered"
-
-    # Check event has not started.
-    assert event.startTime > currentTime, "Event has already started"
-
-    # Check capacity.
-    count = 0
+    # Check if this participant is already registered.
     for registration in registrations:
-        if registration.eventID == eventID:
-            count += 1
+        if (
+            registration.eventID == eventID
+            and registration.userID == userID
+        ):
+            raise ValueError("Participant already registered!")
 
-    assert count < event.capacity, "Event is full"
-
-    # Create registration.
+    # Generate a new registration ID.
     registrationID = 1
     for registration in registrations:
         if registration.registrationID >= registrationID:
             registrationID = registration.registrationID + 1
 
+    # Create the registration.
     newRegistration = Registration(
         registrationID,
         eventID,
@@ -129,6 +162,7 @@ def registerEvent(
     return newRegistration
 
 
+# Cancel a participant's registration.
 def cancelRegistration(
     eventID: int,
     userID: int,
@@ -136,17 +170,12 @@ def cancelRegistration(
     participants: list,
     registrations: list[Registration]
 ) -> bool:
-    # Check event exists.
-    assert any(e.eventID == eventID for e in events), (
-        "Event does not exist"
-    )
 
-    # Check participant exists.
-    assert any(p.userID == userID for p in participants), (
+    assert eventExists(eventID, events), "Event does not exist"
+    assert participantExists(userID, participants), (
         "Participant does not exist"
     )
 
-    # Find and remove registration.
     for registration in registrations:
         if (
             registration.eventID == eventID
@@ -158,20 +187,18 @@ def cancelRegistration(
     raise ValueError("Registration does not exist")
 
 
+# List participants registered for an event.
 def listEventParticipants(
     eventID: int,
     events: list,
     participants: list,
     registrations: list[Registration]
 ) -> list:
-    # Check event exists.
-    assert any(e.eventID == eventID for e in events), (
-        "Event does not exist"
-    )
+
+    assert eventExists(eventID, events), "Event does not exist"
 
     result = []
 
-    # Find participants registered for this event.
     for registration in registrations:
         if registration.eventID == eventID:
             for participant in participants:
@@ -180,3 +207,4 @@ def listEventParticipants(
                     break
 
     return result
+```
