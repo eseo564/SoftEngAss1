@@ -1,10 +1,5 @@
 [
 	{
-		"userID": -1,
-		"name": "THIS IS A PLACEHOLDER NAME",
-		"email": "placeholder@mtroyal.ca"
-	},
-	{
 		"userID": 0,
 		"name": "John Doe",
 		"email": "fake.email@microslop.com"
@@ -43,5 +38,10 @@
 		"userID": 7,
 		"name": "Nicholas Christie",
 		"email": "nchri421@mtroyal.ca"
+	},
+	{
+		"userID": 8,
+		"name": "A Name",
+		"email": "an.email@hotmail.co.uk"
 	}
 ]
