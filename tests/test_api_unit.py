@@ -27,7 +27,7 @@ def test_create_event_with_mocked_database(client, mocked_database):
 
     mock_cursor.lastrowid = 3
 
-    response = client/post("/api/v1/events",
+    response = client.post("/api/v1/events",
                            json={"id": 3,
                                  "name": "Code Reviews",
                                  "date": "10/24/2026",
@@ -58,3 +58,63 @@ def test_create_event_with_mocked_database(client, mocked_database):
     mock_connection.commit.assert_called_once_with()
     mock_cursor.close.assert_called_once_with()
     mock_connection.close.assert_called_once_with()
+
+
+
+def test_create_event_with_duplicate_name(client, mocked_database):
+    mock_get_db, mock_connection, mock_cursor = mocked_database
+
+    mock_cursor.lastrowid = 3
+
+    response1 = client.post("/api/v1/events",
+                           json={"id": 3,
+                                 "name": "Tour",
+                                 "date": "10/24/2026",
+                                 "time": "17:00",
+                                 "capacity": 35,
+                                 "location": "Library"},
+                                 )
+
+    assert response1.status_code == 201
+    assert response1.get_json() == {
+        "data": {
+           "id": 3,
+            "name": "Tour",
+            "date": "10/24/2026",
+            "time": "17:00",
+            "capacity": 35,
+            "location": "Library", 
+        }
+    }
+
+    id_1 = response1.get_json()["data"]["id"]
+
+    mock_cursor.lastrowid = 4
+    response2 = client.post("/api/v1/events",
+                           json={"id": 3,
+                                 "name": "Tour",
+                                 "date": "10/24/2026",
+                                 "time": "17:00",
+                                 "capacity": 35,
+                                 "location": "Library"},
+                                 ) 
+
+    assert response2.status_code == 201
+    assert response2.get_json() == {
+        "data": {
+           "id": 4,
+            "name": "Tour",
+            "date": "10/24/2026",
+            "time": "17:00",
+            "capacity": 35,
+            "location": "Library", 
+        }
+    }
+
+    id_2 = response2.get_json()["data"]["id"]
+
+    assert id_1 != id_2 
+
+    sql, parameters = mock_cursor.execute.call_args[0]
+    assert "INSERT INTO events" in sql
+    assert parameters == ("Tour", "10/24/2026", "17:00", 35, "Library")
