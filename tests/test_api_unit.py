@@ -118,3 +118,44 @@ def test_create_event_with_duplicate_name(client, mocked_database):
     sql, parameters = mock_cursor.execute.call_args[0]
     assert "INSERT INTO events" in sql
     assert parameters == ("Tour", "10/24/2026", "17:00", 35, "Library")
+
+
+
+
+
+def test_create_event_with_missing_information(client, mocked_database):
+    mock_get_db, mock_connection, mock_cursor = mocked_database
+
+    mock_cursor.lastrowid = 3
+
+    response = client.post("/api/v1/events",
+                           json={"id": 3,
+                                 "name": "Code Reviews",
+                                 "date": "10/24/2026",
+                                 "time": "",
+                                 "capacity": 35,
+                                 "location": "Library"},
+                                 )
+
+    assert response.status_code == 400
+    assert response.get_json() == {
+        "data": {
+           "id": 3,
+            "name": "Code Reviews",
+            "date": "10/24/2026",
+            "time": "",
+            "capacity": 35,
+            "location": "Library", 
+        }
+    }
+
+    mock_get_db.assert_called_once_with()
+    mock_connection.cursor.assert_called_once_with()
+
+    sql, parameters = mock_cursor.execute.call_args[0]
+    assert "INSERT INTO events" in sql
+    assert parameters == ("Code Reviews", "10/24/2026", "17:00", 35, "Library")
+
+    mock_connection.commit.assert_called_once_with()
+    mock_cursor.close.assert_called_once_with()
+    mock_connection.close.assert_called_once_with()
