@@ -1,10 +1,9 @@
--- Assumptions: caps out at 100 characters
+-- Assumptions: caps out at 255 characters
 -- event title and location
 -- participant name and email
+-- registration date cannot be in the present
 
 --unique participant per reg event?
-
---Camel case for eventId?
 
 CREATE DATABASE assignment1;
 
@@ -12,26 +11,26 @@ USE assignment1;
 
 --Create Tables
 CREATE TABLE events (
-    eventID INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(100) NOT NULL,
-    location VARCHAR(100) NOT NULL,
-    startTime DATETIME NOT NULL,
-    capicity INT UNSIGNED NOT NULL
+    eventID int AUTO_INCREMENT PRIMARY KEY,
+    title varchar(255) NOT NULL,
+    location varchar(255) NOT NULL,
+    startTime datetime NOT NULL,
+    capicity int UNSIGNED NOT NULL
 );
 
 CREATE TABLE participants (
-    participantID INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL
+    participantID int AUTO_INCREMENT PRIMARY KEY,
+    name varchar(255) NOT NULL,
+    email varchar(255) UNIQUE NOT NULL
 );
 
 CREATE TABLE registrations (
-    eventID INT,
-    participantID INT,
-    PRIMARY KEY (eventID, participantID),
+    registrationID int AUTO_INCREMENT PRIMARY KEY,
+    eventID int NOT NULL,
+    participantID int NOT NULL,
     FOREIGN KEY (eventID) REFERENCES events(eventID),
     FOREIGN KEY (participantID) REFERENCES participants(participantID),
-    registration_date DATETIME DEFAULT CURRENT_TIMESTAMP
+    registrationDate DATETIME DEFAULT CURRENT_TIMESTAMP
 );
    
 -- Seed Tables
