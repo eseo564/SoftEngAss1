@@ -1,7 +1,7 @@
-```python
+python
 import json
 
-
+#declaring INSTANCES (unique copies, not global variables) 
 class Registration:
     __slots__ = ("registrationID", "eventID", "userID", "registeredAt")
 
@@ -12,6 +12,8 @@ class Registration:
         userID: int,
         registeredAt: str
     ):
+        #isinstance checks if they are ints
+        #len + .strip() checks date isn't empty or whitespace
         assert isinstance(registrationID, int), "Invalid registrationID"
         assert isinstance(eventID, int), "Invalid eventID"
         assert isinstance(userID, int), "Invalid userID"
@@ -22,6 +24,7 @@ class Registration:
         self.userID = userID
         self.registeredAt = registeredAt
 
+    #checks if you are comparing between Registration class to begin with
     def __eq__(self, other: "Registration"):
         if not isinstance(other, Registration):
             return NotImplemented
@@ -31,7 +34,7 @@ class Registration:
             and self.userID == other.userID
         )
 
-
+#reads registration data from a JSON file, converts to list of Registration objects
 def loadDatabase():
     with open("RegistrationDatabase.json", "r") as database:
         registrations = json.load(database)
@@ -47,7 +50,7 @@ def loadDatabase():
     ]
 
 
-# 1. Check if an event ID exists.
+#1 check if an event ID exists
 def eventExists(eventID: int, events: list) -> bool:
     for event in events:
         if event.eventID == eventID:
@@ -55,7 +58,7 @@ def eventExists(eventID: int, events: list) -> bool:
     return False
 
 
-# 2. Check if a participant ID exists.
+#2 check if a participant ID exists
 def participantExists(userID: int, participants: list) -> bool:
     for participant in participants:
         if participant.userID == userID:
@@ -63,7 +66,7 @@ def participantExists(userID: int, participants: list) -> bool:
     return False
 
 
-# 3. Check if a registration is allowed.
+#3 check if a registration is allowed
 def registrationChecker(
     eventID: int,
     registrations: list[Registration],
@@ -71,7 +74,7 @@ def registrationChecker(
     currentTime: str
 ) -> bool:
 
-    # Find the event.
+    #finding the event
     event = None
     for e in events:
         if e.eventID == eventID:
@@ -81,7 +84,7 @@ def registrationChecker(
     if event is None:
         return False
 
-    # Check capacity.
+    #check the capacity
     count = 0
     for registration in registrations:
         if registration.eventID == eventID:
@@ -90,14 +93,14 @@ def registrationChecker(
     if count >= event.capacity:
         return False
 
-    # Check event start time.
+    #checking start time
     if event.startTime <= currentTime:
         return False
 
     return True
 
 
-# 4. Check whether a registration ID already exists.
+#4 check whether a registration ID already exists
 def registrationExists(
     registrationID: int,
     registrations: list[Registration]
@@ -110,12 +113,12 @@ def registrationExists(
     return False
 
 
-# 5. Check whether a time is in the future.
+#5 check whether a time is in the future
 def timeValid(time: str, currentTime: str) -> bool:
     return time > currentTime
 
 
-# Register a participant for an event.
+#register a participant for an event
 def registerEvent(
     eventID: int,
     userID: int,
@@ -125,18 +128,18 @@ def registerEvent(
     currentTime: str
 ) -> Registration:
 
-    # Check event and participant.
+    #checking event and participant
     assert eventExists(eventID, events), "Event does not exist"
     assert participantExists(userID, participants), (
         "Participant does not exist"
     )
 
-    # Check whether the event has space and has not started.
+    #check whether the event has space & has not started
     assert registrationChecker(
         eventID, registrations, events, currentTime
     ), "Event is full or has already started"
 
-    # Check if this participant is already registered.
+    #check if this participant is already registered
     for registration in registrations:
         if (
             registration.eventID == eventID
@@ -144,13 +147,13 @@ def registerEvent(
         ):
             raise ValueError("Participant already registered!")
 
-    # Generate a new registration ID.
+    #generate a new registration ID
     registrationID = 1
     for registration in registrations:
         if registration.registrationID >= registrationID:
             registrationID = registration.registrationID + 1
 
-    # Create the registration.
+    #creating the registration
     newRegistration = Registration(
         registrationID,
         eventID,
@@ -162,7 +165,7 @@ def registerEvent(
     return newRegistration
 
 
-# Cancel a participant's registration.
+#canceling a participant's registration
 def cancelRegistration(
     eventID: int,
     userID: int,
@@ -187,7 +190,7 @@ def cancelRegistration(
     raise ValueError("Registration does not exist")
 
 
-# List participants registered for an event.
+#lists the participants registered for an event
 def listEventParticipants(
     eventID: int,
     events: list,
@@ -207,4 +210,3 @@ def listEventParticipants(
                     break
 
     return result
-```
