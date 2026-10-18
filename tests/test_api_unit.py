@@ -156,3 +156,21 @@ def test_create_event_with_negative_capacity(client, mocked_database):
                                 )
     assert response.status_code == 400
     assert response.get_json() == {"error": "capacity has to be a positive integer"}
+
+
+
+def test_create_event_invalid_date_time(client, mocked_database):
+    mock_get_db, mock_connection, mock_cursor = mocked_database
+
+    mock_cursor.lastrowid = 3
+    response = client.post("/api/v1/events",
+                            json={"id": 3,
+                                "name": "Code Reviews",
+                                "date": "2026-10-21",
+                                "time": "17:00",
+                                "capacity": -10,
+                                "location": "Library"},
+                                    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "wrong date format (MM/DD/YYYY)"}
