@@ -214,7 +214,7 @@ def test_update_event(client, mocked_database):
     mock_get_db, mock_connection, mock_cursor = mocked_database
     mock_cursor.lastrowid = 3
 
-    response = client.put("/api/v1/events",
+    response = client.put("/api/v1/events/3",
                             json={"id": 3,
                                 "name": "Code Reviews",
                                 "date": "10/24/2026",
