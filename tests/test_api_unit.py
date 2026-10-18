@@ -140,3 +140,19 @@ def test_create_event_with_missing_information(client, mocked_database):
     assert response.status_code == 400
     assert response.get_json() == {"error": "wrong time format (XX:XX)"
     }
+
+
+def test_create_event_with_negative_capacity(client, mocked_database):
+    mock_get_db, mock_connection, mock_cursor = mocked_database
+
+    mock_cursor.lastrowid = 3
+    response = client.post("/api/v1/events",
+                           json={"id": 3,
+                                 "name": "Code Reviews",
+                                "date": "10/24/2026",
+                                "time": "",
+                                "capacity": 35,
+                                "location": "Library"},
+                                )
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "capacity has to be a positive integer"}

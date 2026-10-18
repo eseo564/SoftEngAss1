@@ -241,7 +241,8 @@ def checkReqs(name, date, time, capacity, location):
 
     #checks if date is the right format
     try:
-        datetime.strptime(date, "%m/%d/%Y")
+        if isinstance(date, str):
+            datetime.strptime(date, "%m/%d/%Y")
 
     except ValueError:
         return jsonify({"error": "wrong date format (MM/DD/YYYY)"}),400
