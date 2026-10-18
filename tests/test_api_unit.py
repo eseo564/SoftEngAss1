@@ -208,3 +208,47 @@ def test_create_event_with_wrong_data_type(client, mocked_database):
 
     assert response.status_code == 400
     assert response.get_json() == {"error": "capacity must be an integer"}
+
+
+def test_update_event(client, mocked_database):
+    mock_get_db, mock_connection, mock_cursor = mocked_database
+    mock_cursor.lastrowid = 3
+
+    response = client.put("/api/v1/events",
+                            json={"id": 3,
+                                "name": "Code Reviews",
+                                "date": "10/24/2026",
+                                "time": "17:00",
+                                "capacity": 35,
+                                "location": "B103"},
+                                )
+
+
+    assert response.status_code == 200
+    assert response.get_json() == {
+        "data": {
+           "id": 3,
+            "name": "Code Reviews",
+            "date": "10/24/2026",
+            "time": "17:00",
+            "capacity": 35,
+            "location": "B103", 
+        }
+    }
+
+    
+
+def test_update_event_with_missing_information(client, mocked_database):
+    mock_get_db, mock_connection, mock_cursor = mocked_database
+    mock_cursor.lastrowid = 3
+    response = client.put("/api/v1/events",
+                          json={"id": 3,
+                                "name": "Code Reviews",
+                                "date": "10/24/2026",
+                                "time": "",
+                                "capacity": 35,
+                                "location": "Library"},
+                                )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "wrong time format (XX:XX)"}                  
