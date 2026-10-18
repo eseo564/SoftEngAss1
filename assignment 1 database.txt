@@ -11,8 +11,10 @@ USE assignment1;
 
 --Create Tables
 CREATE TABLE events (
-    eventID int AUTO_INCREMENT PRIMARY KEY,
-    title varchar(255) NOT NULL,
+    id int AUTO_INCREMENT PRIMARY KEY,
+    name varchar(255) NOT NULL,
+    date DATE
+    time 
     location varchar(255) NOT NULL,
     startTime datetime NOT NULL,
     capicity int UNSIGNED NOT NULL
