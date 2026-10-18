@@ -168,7 +168,7 @@ def test_create_event_invalid_date_time(client, mocked_database):
                                 "name": "Code Reviews",
                                 "date": "2026-10-21",
                                 "time": "17:00",
-                                "capacity": -10,
+                                "capacity": 35,
                                 "location": "Library"},
                                     )
 
