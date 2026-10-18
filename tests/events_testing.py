@@ -272,7 +272,6 @@ def test_deleteEvent_with_duplicate_deletes(client, mocked_database):
         "error": "No event found with id 1"
     }
 
-    
     assert mock_cursor.execute.call_count == 3  # Two SELECTs and one DELETE
 
 # Tests deleteEvent() to see if it returns 404 when the event id is negative
@@ -282,7 +281,6 @@ def test_deleteEvent_with_negative_id(client, mocked_database):
     response = client.delete("/api/v1/events/-1")
 
     assert response.status_code == 404
-
    
     mock_get_db.assert_not_called()
 
