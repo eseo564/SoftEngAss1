@@ -1,4 +1,3 @@
-  GNU nano 8.7.1                                                                 db.py                                                                          
 import os
 from pathlib import Path
 
