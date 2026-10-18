@@ -151,7 +151,7 @@ def test_create_event_with_negative_capacity(client, mocked_database):
                                  "name": "Code Reviews",
                                 "date": "10/24/2026",
                                 "time": "17:00",
-                                "capacity": 35,
+                                "capacity": -10,
                                 "location": "Library"},
                                 )
     assert response.status_code == 400
