@@ -1,0 +1,56 @@
+-- Assumptions: caps out at 100 characters
+-- event title and location
+-- participant name and email
+
+--unique participant per reg event?
+
+--Camel case for eventId?
+
+CREATE DATABASE assignment1;
+
+USE assignment1;
+
+--Create Tables
+CREATE TABLE events (
+    eventID INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100) NOT NULL,
+    location VARCHAR(100) NOT NULL,
+    startTime DATETIME NOT NULL,
+    capicity INT UNSIGNED NOT NULL
+);
+
+CREATE TABLE participants (
+    participantID INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL
+);
+
+CREATE TABLE registrations (
+    eventID INT,
+    participantID INT,
+    PRIMARY KEY (eventID, participantID),
+    FOREIGN KEY (eventID) REFERENCES events(eventID),
+    FOREIGN KEY (participantID) REFERENCES participants(participantID),
+    registration_date DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+   
+-- Seed Tables
+INSERT INTO events (title, location, startTime, capicity)
+VALUES
+   ('Otafest', 'Telus Sparks', '2027-07-15 09:00:00', 220),
+   ('Christmas', 'Home', '2026-12-25 00:00:00', 10),
+   ('Spring Cleaning', 'Garage', '2026-04-12 08:00:00', 60);
+
+INSERT INTO participants (name, email) 
+VALUES
+   ('Vincent Ha', 'vhatest@gmail.com'),
+   ('Lever Less', 'lltriplel@gmail.com'),
+   ('Delta Force', 'dfundefined@gmail.ca'),
+   ('Canyon Meadows', 'canyonmeds@live.ca'),
+   ('Filter Five', 'fillerfive@hotmail.ca');
+
+INSERT INTO registrations (eventID, participantID, registration_date)
+VALUES
+   (1, 1, '2026-10-15 10:30:00'),
+   (1, 2, '2026-10-16 14:15:00'),
+   (3, 3, '2026-10-17 09:00:00');
