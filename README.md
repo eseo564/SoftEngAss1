@@ -2,7 +2,15 @@
 A REST API for campus clubs offering activities such as pottery workshops, board game nights, and photography walks! The service manages events and lets existing participants register or cancel bookings.
 
 ## Steps to build:
-
+Set all this up on your virtual machine, we used Google Cloud
+1) **Environment Setup**
+   - Create a ```.env``` file in the root directory
+   - Copy the ```.env.example``` as ```.env``` (```cp .env.example .env```)
+   - Open ```.env``` and fill in YOUR specific credentials
+3) Install Dependencies
+4) Database Initialization
+5) Running Application Locally
+   - Run ```python main.py``` on the command line
 ### Known limitations:
 
 ## Command environments and working directories:
