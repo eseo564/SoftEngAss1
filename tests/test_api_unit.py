@@ -150,7 +150,7 @@ def test_create_event_with_negative_capacity(client, mocked_database):
                            json={"id": 3,
                                  "name": "Code Reviews",
                                 "date": "10/24/2026",
-                                "time": "",
+                                "time": "17:00",
                                 "capacity": 35,
                                 "location": "Library"},
                                 )
