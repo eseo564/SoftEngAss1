@@ -100,23 +100,12 @@ def deleteEvent(eventID):
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
-    cursor.execute(
-        """
-        SELECT id, name, date, time, capacity, location
-        FROM events
-        WHERE id = %s
-        """,
-        (eventID,),
-    )
-
-    row = cursor.fetchone()
-
-    if row is None:
+    # check to see if the event exists
+    db_event_response = checkEvent(eventID, db) 
+    if db_event_response:
         cursor.close()
         db.close()
-        return jsonify({
-            "error": f"No event found with id {eventID}"
-        }), 404
+        return db_event_response
 
     cursor.execute(
         """
@@ -132,10 +121,8 @@ def deleteEvent(eventID):
     db.close()
 
     return jsonify({
-        "message": f"Event {eventID} successfully deleted",
-        "data": row
+        "message": f"Event {eventID} successfully deleted"
     }), 200
-
 
 @app.put("/api/v1/events/<int:eventID>")
 def updateEvent(eventID):
@@ -151,17 +138,18 @@ def updateEvent(eventID):
     if error_response: 
         return error_response
 
+    db = get_db()
+    
     #check to see if the event exists
-    db_event_response = checkEvent(eventID)
+    db_event_response = checkEvent(eventID, db)
     if db_event_response:
         return db_event_response
 
     #check to see capacity changes
-    db_capacity_response = checkCapacity(eventID, capacity)
+    db_capacity_response = checkCapacity(eventID, capacity, db)
     if db_capacity_response:
         return db_capacity_response
     
-    db = get_db()
     cursor = db.cursor(dictionary=True)
 
     cursor.execute(
@@ -189,33 +177,30 @@ def updateEvent(eventID):
     return jsonify({"data": updated_event}), 200
     
 '''Helper functions'''
-def checkEvent(eventID):
-    db = get_db()
+#gave the db as a parameter to avoid opening and closing the db multiple times
+def checkEvent(eventID, db):
     cursor = db.cursor(dictionary=True)
 
     cursor.execute(
         """
         SELECT id
-        FROM events 
+        FROM events
         WHERE id = %s
         """,
         (eventID,),
     )
+
     row = cursor.fetchone()
+    cursor.close()
+
     if row is None:
-        cursor.close()
-        db.close()
         return jsonify({
             "error": f"No event found with id {eventID}"
         }), 404
 
-    cursor.close()
-    db.close()
-    return None   
-
+    return None
     
-def checkCapacity(eventID, capacity):
-    db = get_db()
+def checkCapacity(eventID, capacity, db):
     cursor = db.cursor(dictionary=True)
 
     cursor.execute(
