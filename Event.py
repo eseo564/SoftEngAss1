@@ -248,7 +248,8 @@ def checkReqs(name, date, time, capacity, location):
 
     #checks if time is in the right format
     try:
-        datetime.strptime(time, "%H:%M")
+        if isinstance(time,str):
+            datetime.strptime(time, "%H:%M")
 
     except ValueError:
         return jsonify({"error": "wrong time format (XX:XX)"}), 400

@@ -46,6 +46,16 @@ class MockCursor:
         query_upper = " ".join(query.upper().split())
         params = params or ()
 
+        if "INSERT" in query.upper() or "UPDATE" in query.upper():
+                self.lastrowid = 1
+                return
+        
+        if "COUNT(*)" in query.upper():
+                dummy_row = {"current_registrations": 0}
+                self.results = [dummy_row]
+                self.last_result = dummy_row
+                return
+        
         if query_upper.startswith("SELECT") and "FROM EVENTS" in query_upper:
             event_id = params[0] if params else None
 

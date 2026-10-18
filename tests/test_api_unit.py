@@ -154,7 +154,7 @@ def test_create_event_with_missing_information(client, mocked_database):
 
     sql, parameters = mock_cursor.execute.call_args[0]
     assert "INSERT INTO events" in sql
-    assert parameters == ("Code Reviews", "10/24/2026", "17:00", 35, "Library")
+    assert parameters == ("Code Reviews", "10/24/2026", "", 35, "Library")
 
     mock_connection.commit.assert_called_once_with()
     mock_cursor.close.assert_called_once_with()

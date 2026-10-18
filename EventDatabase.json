@@ -1,0 +1,28 @@
+[
+    {
+        "id": 1,
+        "name": "Pottery workshop",
+        "date": "10/10/2026",
+        "time": "00:00",
+        "capacity": 30,
+        "location": "B103"
+    },
+
+    {
+        "id": 2,
+        "name": "Board Game Night",
+        "date": "10/10/2026",
+        "time": "05:00",
+        "capacity": 50,
+        "location": "B103"
+    },
+
+    {
+        "id": 3,
+        "name": "Photography Walk",
+        "date": "10/10/2026",
+        "time": "10:00",
+        "capacity": 15,
+        "location": "B103"
+    }
+]
