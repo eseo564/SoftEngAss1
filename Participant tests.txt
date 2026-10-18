@@ -1,0 +1,119 @@
+Test 1: Create a participant with valid inputs
+Description: Verify that a participant is initialized correctly when all fields are valid.
+Inputs:
+
+userID = 1
+name = "Alice"
+email = "alice@example.com"
+
+Expected output: A Participant object whose attributes match the inputs.
+Reason: This is the fundamental happy-path test. If it fails, the class cannot be used normally.
+
+def test_constructor_valid_inputs():
+    participant = Participant(
+        1, "Alice", "alice@example.com"
+    )
+
+    assert participant.userID == 1
+    assert participant.name == "Alice"
+    assert participant.email == "alice@example.com"
+
+
+Test 2: Reject a non-integer user ID
+Description: Verify that userID must be an integer.
+Inputs: "1", 1.5, and None.
+Expected output: AssertionError with message "Invalid userID" for each input.
+Reason: Prevents invalid identifier types from entering the database.
+
+@pytest.mark.parametrize("user_id", ["1", 1.5, None])
+def test_constructor_rejects_non_integer_user_id(user_id):
+    with pytest.raises(AssertionError, match="Invalid userID"):
+        Participant(user_id, "Alice", "alice@example.com")
+Additional edge case: Python considers bool a subclass of int, so True currently passes this assertion. If Boolean identifiers should be rejected, add a test for True and change the validation to type(userID) is int.
+
+
+Test 3: Accept zero and negative integer IDs, or reject them explicitly
+Description: Define the intended rules for the valid numeric range of userID.
+Inputs: 0 and -1.
+Expected output: Under the current implementation, both are accepted.
+Reason: The code checks the type but not the range. A test makes this behavior explicit so the requirements can be clarified.
+
+@pytest.mark.parametrize("user_id", [0, -1])
+def test_constructor_integer_id_boundary_behavior(user_id):
+    participant = make_participant(userID=user_id)
+    assert participant.userID == user_id
+
+If IDs must be positive, these should instead be rejection tests, and the constructor should validate userID > 0.
+
+
+Test 4: Reject a blank name
+Description: Ensure the name cannot be empty or consist only of whitespace.
+Inputs: "", " ", "   ", and "\t\n".
+Expected output: AssertionError with message "Cannot have blank name".
+Reason: Whitespace-only names are effectively missing names and should not be accepted.
+
+@pytest.mark.parametrize("name", ["", " ", "   ", "\t\n"])
+def test_constructor_rejects_blank_name(name):
+    with pytest.raises(AssertionError, match="Cannot have blank name"):
+        Participant(1, name, "alice@example.com")
+
+
+Test 5: Accept names containing leading or trailing spaces
+Description: Determine whether surrounding whitespace should be preserved or stripped.
+Inputs: " Alice ".
+Expected output: Under the current implementation, the name is accepted and stored unchanged as " Alice ".
+Reason: The constructor calls strip() only to check whether the name is blank; it does not normalize the stored value.
+
+def test_constructor_preserves_name_whitespace():
+    participant = make_participant(name=" Alice ")
+    assert participant.name == " Alice "
+This test documents current behavior. If names should be normalized, update the implementation and change the expected output to "Alice".
+
+Test 6: Reject a blank email
+Description: Verify that empty and whitespace-only email addresses are rejected.
+
+Inputs: "", " ", and "   ".
+
+Expected output: AssertionError with message "Cannot have blank email".
+
+Reason: An email address is a required field.
+
+python
+@pytest.mark.parametrize("email", ["", " ", "   "])
+def test_constructor_rejects_blank_email(email):
+    with pytest.raises(AssertionError, match="Cannot have blank email"):
+        Participant(1, "Alice", email)
+
+
+Test 7: Reject malformed email addresses
+Description: Verify that addresses that do not match the expected format are rejected.
+Inputs: "alice", "alice@", "@example.com", "alice@example", and "alice@example.c".
+Expected output: AssertionError with message "Invalid email format".
+Reason: Prevents obviously malformed email addresses from being accepted.
+
+@pytest.mark.parametrize("email", [
+    "alice",
+    "alice@",
+    "@example.com",
+    "alice@example",
+    "alice@example.c",
+])
+def test_constructor_rejects_invalid_email(email):
+    with pytest.raises(AssertionError, match="Invalid email format"):
+        Participant(1, "Alice", email)
+
+
+Test 8: Accept valid email variations
+Description: Verify that common supported email formats are accepted.
+Inputs: Addresses such as "alice.smith@example.com", "alice+test@example.co.uk", and "a_b-c@example.com".
+Expected output: A successfully created Participant for each address.
+Reason: Ensures valid variations supported by the regular expression are not accidentally rejected.
+
+@pytest.mark.parametrize("email", [
+    "alice.smith@example.com",
+    "alice+test@example.co.uk",
+    "a_b-c@example.com",
+])
+def test_constructor_accepts_valid_email_variations(email):
+    participant = make_participant(email=email)
+    assert participant.email == email
