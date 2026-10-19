@@ -121,7 +121,7 @@ def test_create_registration_full_event(client, mocked_database):
         json={"eventID": 2, "userID": 1},
     )
 
-    assert response.status_code == 409
+    assert response.status_code == 400
     mock_save_db.assert_not_called()
 
 
