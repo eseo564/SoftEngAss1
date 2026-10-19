@@ -290,7 +290,7 @@ def test_update_event_invalid_date(client, mocked_database):
 
 
 
-def test_create_event_invalid_time(client, mocked_database):
+def test_update_event_invalid_time(client, mocked_database):
     mock_get_db, mock_connection, mock_cursor = mocked_database
 
     mock_cursor.lastrowid = 3
@@ -309,7 +309,7 @@ def test_create_event_invalid_time(client, mocked_database):
 
 
 
-def test_create_event_with_wrong_data_type(client, mocked_database):
+def test_update_event_with_wrong_data_type(client, mocked_database):
     mock_get_db, mock_connection, mock_cursor = mocked_database
 
     mock_cursor.lastrowid = 3
@@ -324,3 +324,22 @@ def test_create_event_with_wrong_data_type(client, mocked_database):
 
     assert response.status_code == 400
     assert response.get_json() == {"error": "capacity must be an integer"}
+
+
+
+def test_update_event_with_lowering_capacity(client, mocked_database):
+    mock_cursor = mocked_database
+
+    mock_cursor.fetchone.return_value = {"id": 3, "current_registrations": 50}
+
+    response = client.put("/api/v1/events/3",
+                        json={"id": 3,
+                            "name": "Code Reviews",
+                            "date": "10/21/2026",
+                            "time": "25:30",
+                            "capacity": "20",
+                            "location": "Library"},
+                                )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "changing amount lower than registered amount"}
