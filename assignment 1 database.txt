@@ -3,9 +3,9 @@
 -- participant name and email
 -- does not check for registration time. left to main
 
-CREATE DATABASE assignment1;
+CREATE DATABASE eventsBooking;
 
-USE assignment1;
+USE eventsBooking;
 
 --Create Tables
 CREATE TABLE events (
@@ -13,7 +13,7 @@ CREATE TABLE events (
     name varchar(255) NOT NULL,
     date DATE NOT NULL,
     time TIME NOT NULL,
-    capicity int UNSIGNED NOT NULL,
+    capacity int UNSIGNED NOT NULL,
     location varchar(255) NOT NULL 
 );
 
@@ -34,7 +34,7 @@ CREATE TABLE registrations (
 );
    
 -- Seed Tables
-INSERT INTO events (name, date, time, capicity, location)
+INSERT INTO events (name, date, time, capacity, location)
 VALUES
    ('Python Workshop', '2027-07-15', '09:00:00', 220, 'Telus Sparks'),
    ('Christmas', '2026-12-25', '00:00:00', 10, 'Home'),

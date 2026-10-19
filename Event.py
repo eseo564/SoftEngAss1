@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from mock_db import get_db, add_event
+from db import get_db
 from datetime import datetime
 
 app = Flask(__name__)
@@ -80,9 +80,9 @@ def retrieveEvent(eventID):
     cursor = db.cursor(dictionary=True)
     cursor.execute(
         """
-        SELECT id, name, date, time, capacity, location
-        WHERE id = %s
-        FROM events 
+        SELECT id, name, date, time, capiaity, location
+        FROM events
+	WHERE id = %s
         """,
         (eventID,),
     )
@@ -263,9 +263,6 @@ def checkReqs(name, date, time, capacity, location):
 
     except ValueError:
         return jsonify({"error": "wrong date or time format"}), 400
-
-
-
 
 
 if __name__ == "__main__":
