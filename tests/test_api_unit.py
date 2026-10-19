@@ -328,8 +328,7 @@ def test_update_event_with_wrong_data_type(client, mocked_database):
 
 
 def test_update_event_with_lowering_capacity(client, mocked_database):
-    mock_cursor = mocked_database
-
+    mock_get_db, mock_connection, mock_cursor = mocked_database
     mock_cursor.fetchone.return_value = {"id": 3, "current_registrations": 50}
 
     response = client.put("/api/v1/events/3",
