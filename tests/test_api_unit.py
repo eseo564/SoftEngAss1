@@ -317,7 +317,7 @@ def test_update_event_with_wrong_data_type(client, mocked_database):
                         json={"id": 3,
                             "name": "Code Reviews",
                             "date": "10/21/2026",
-                            "time": "25:30",
+                            "time": "10:30",
                             "capacity": "35",
                             "location": "Library"},
                                 )
@@ -335,7 +335,7 @@ def test_update_event_with_lowering_capacity(client, mocked_database):
                         json={"id": 3,
                             "name": "Code Reviews",
                             "date": "10/21/2026",
-                            "time": "25:30",
+                            "time": "10:30",
                             "capacity": 20,
                             "location": "Library"},
                                 )
