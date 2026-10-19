@@ -80,7 +80,7 @@ def retrieveEvent(eventID):
     cursor = db.cursor(dictionary=True)
     cursor.execute(
         """
-        SELECT id, name, date, time, capiaity, location
+        SELECT id, name, date, time, capacity, location
         FROM events
 	WHERE id = %s
         """,
