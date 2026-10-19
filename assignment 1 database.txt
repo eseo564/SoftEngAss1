@@ -3,8 +3,6 @@
 -- participant name and email
 -- does not check for registration time. left to main
 
---unique participant per reg event?
-
 CREATE DATABASE assignment1;
 
 USE assignment1;
@@ -13,15 +11,14 @@ USE assignment1;
 CREATE TABLE events (
     id int AUTO_INCREMENT PRIMARY KEY,
     name varchar(255) NOT NULL,
-    date DATE
-    time 
-    location varchar(255) NOT NULL,
-    startTime datetime NOT NULL,
-    capicity int UNSIGNED NOT NULL
+    date DATE NOT NULL,
+    time TIME NOT NULL,
+    capicity int UNSIGNED NOT NULL,
+    location varchar(255) NOT NULL 
 );
 
 CREATE TABLE participants (
-    participantID int AUTO_INCREMENT PRIMARY KEY,
+    userID int AUTO_INCREMENT PRIMARY KEY,
     name varchar(255) NOT NULL,
     email varchar(255) UNIQUE NOT NULL
 );
@@ -29,29 +26,29 @@ CREATE TABLE participants (
 CREATE TABLE registrations (
     registrationID int AUTO_INCREMENT PRIMARY KEY,
     eventID int NOT NULL,
-    participantID int NOT NULL,
-    CONSTRAINT uniqueRegistration UNIQUE (eventID, participantID),
-    FOREIGN KEY (eventID) REFERENCES events(eventID),
-    FOREIGN KEY (participantID) REFERENCES participants(participantID),
-    registrationDate DATETIME DEFAULT CURRENT_TIMESTAMP
+    userID int NOT NULL,
+    CONSTRAINT uniqueRegistration UNIQUE (eventID, userID),
+    FOREIGN KEY (eventID) REFERENCES events(id),
+    FOREIGN KEY (userID) REFERENCES participants(userID),
+    currentTime DATETIME DEFAULT CURRENT_TIMESTAMP
 );
    
 -- Seed Tables
-INSERT INTO events (title, location, startTime, capicity)
+INSERT INTO events (name, date, time, capicity, location)
 VALUES
-   ('Otafest', 'Telus Sparks', '2027-07-15 09:00:00', 220),
-   ('Christmas', 'Home', '2026-12-25 00:00:00', 10),
-   ('Spring Cleaning', 'Garage', '2026-04-12 08:00:00', 60);
+   ('Python Workshop', '2027-07-15', '09:00:00', 220, 'Telus Sparks'),
+   ('Christmas', '2026-12-25', '00:00:00', 10, 'Home'),
+   ('Otafest', '2026-04-12', '08:00:00', 60, 'Garage');
 
 INSERT INTO participants (name, email) 
 VALUES
-   ('Vincent Ha', 'vhatest@gmail.com'),
-   ('Lever Less', 'lltriplel@gmail.com'),
-   ('Delta Force', 'dfundefined@gmail.ca'),
-   ('Canyon Meadows', 'canyonmeds@live.ca'),
-   ('Filter Five', 'fillerfive@hotmail.ca');
+   ('Nicholas Christie', 'nchri421@mtroyal.ca'),
+   ('Tiara Misu', 'food.vlogs@gmail.com'),
+   ('Edward Smith', 'ed.smith.1969@gmail.com'),
+   ('Jane Doe', 'jane.doe@email.com'),
+   ('John Doe', 'fake.email@microslop.com');
 
-INSERT INTO registrations (eventID, participantID, registrationDate)
+INSERT INTO registrations (eventID, userID, currentTime)
 VALUES
    (1, 1, '2026-10-15 10:30:00'),
    (1, 2, '2026-10-16 14:15:00'),
