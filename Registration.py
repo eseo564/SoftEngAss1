@@ -102,7 +102,7 @@ def eventExists(eventID: int, events: list) -> bool:
 #2 check if a participant ID exists
 def participantExists(userID: int, participants: list) -> bool:
     for participant in participants:
-        if participant["userID"] == userID:
+        if participant["id"] == userID:
             return True
     return False
 
