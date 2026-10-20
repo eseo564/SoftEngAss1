@@ -1,300 +1,227 @@
 from flask import Flask, request, jsonify
 from datetime import datetime
 from db import get_db
-import json
 
 app = Flask(__name__)
 
+def event_exists(eventID: int, db) -> bool:
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        "SELECT eventID FROM events WHERE eventID = %s",
+        (eventID,),
+    )
+    row = cursor.fetchone()
+    cursor.close()
+    return row is not None
 
-#declaring INSTANCES (unique copies, not global variables) 
-class Registration:
-    __slots__ = ("registrationID", "eventID", "userID", "registeredAt")
+def participant_exists(userID: int, db) -> bool:
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        "SELECT userID FROM participants WHERE userID = %s",
+        (userID,),
+    )
+    row = cursor.fetchone()
+    cursor.close()
+    return row is not None
 
-    def __init__(
-        self,
-        registrationID: int,
-        eventID: int,
-        userID: int,
-        registeredAt: str
-    ):
+def already_registered(eventID: int, userID: int, db) -> bool:
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        """
+        SELECT registrationID
+        FROM registrations
+        WHERE eventID = %s AND userID = %s
+        """,
+        (eventID, userID),
+    )
+    row = cursor.fetchone()
+    cursor.close()
+    return row is not None
 
-	#isinstance checks if they are ints
-        #len + .strip() checks date isn't empty or whitespace
-        assert isinstance(registrationID, int), "Invalid registrationID"
-        assert isinstance(eventID, int), "Invalid eventID"
-        assert isinstance(userID, int), "Invalid userID"
-        assert len(registeredAt.strip()) > 0, "Invalid registration date"
-
-        self.registrationID = registrationID
-        self.eventID = eventID
-        self.userID = userID
-        self.registeredAt = registeredAt
-
-    #checks if you are comparing between Registration class to begin with
-    def __eq__(self, other: "Registration"):
-        if not isinstance(other, Registration):
-            return NotImplemented
-
-        return (
-            self.eventID == other.eventID
-            and self.userID == other.userID
-        )
-
-    def toDict(self):
-        return {
-            "registrationID": self.registrationID,
-            "eventID": self.eventID,
-            "userID": self.userID,
-            "registeredAt": self.registeredAt
-        }
-
-
-# Helper functions
-#reads registration data from a JSON file, converts to list of Registration objects
-def loadDatabase():
-    try:
-        with open("RegistrationDatabase.json", "r") as database:
-            registrations = json.load(database)
-    except FileNotFoundError:
-        registrations = []
-
-    return [
-        Registration(
-            registration["registrationID"],
-            registration["eventID"],
-            registration["userID"],
-            registration["registeredAt"]
-        )
-        for registration in registrations
-    ]
-
-
-def saveDatabase(registrations):
-    with open("RegistrationDatabase.json", "w") as database:
-        json.dump(
-            [registration.toDict() for registration in registrations],
-            database,
-            indent=4
-        )
-
-
-def loadEvents():
-    try:
-        with open("EventDatabase.json", "r") as database:
-            return json.load(database)
-    except FileNotFoundError:
-        return []
-
-
-def loadParticipants():
-    try:
-        with open("ParticipantDatabase.json", "r") as database:
-            return json.load(database)
-    except FileNotFoundError:
-        return []
-
-#1 check if an event ID exists
-def eventExists(eventID: int, events: list) -> bool:
-    for event in events:
-        if event["eventID"] == eventID:
-            return True
-    return False
-
-# not handing in right list handing list of participants when it should be list of registration
-#2 check if a participant ID exists
-def participantExists(id: int, participants: list) -> bool:
-    for participant in participants:
-<<<<<<< HEAD
-        if participant["id"] == userID:
-=======
-        if participant["id"] == id:
->>>>>>> f52dc0e8b5f5b5d9a412faf77f14183574640c90
-            return True
-    return False
-
-#3 check if a registration is allowed
-def registrationChecker(
-    eventID: int,
-    registrations: list,
-    events: list,
-    currentTime: datetime
-) -> bool:
-
-    event = None
-
-    for e in events:
-        if e["eventID"] == eventID:
-            event = e
-            break
-
+def registration_allowed(eventID: int, db) -> bool:
+    """
+    Returns True if the event exists, is not full, and has not started yet.
+    """
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        """
+        SELECT capacity, startTime
+        FROM events
+        WHERE eventID = %s
+        """,
+        (eventID,),
+    )
+    event = cursor.fetchone()
     if event is None:
+        cursor.close()
         return False
 
-    count = 0
+    cursor.execute(
+        """
+        SELECT COUNT(*) AS current_registrations
+        FROM registrations
+        WHERE eventID = %s
+        """,
+        (eventID,),
+    )
+    count_row = cursor.fetchone()
+    current_count = count_row["current_registrations"]
+    cursor.close()
 
-    for registration in registrations:
-        if registration.eventID == eventID:
-            count += 1
-
-    if count >= event["capacity"]:
+    if current_count >= event["capacity"]:
         return False
 
-    try:
-        startTime = datetime.strptime(
-            event["startTime"],
-            "%Y-%m-%d %H:%M"
-        )
-    except (ValueError, TypeError, KeyError):
-        return False
+    # startTime comes back as a datetime from the connector
+    start_time = event["startTime"]
+    if isinstance(start_time, str):
+        try:
+            start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            try:
+                start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M")
+            except ValueError:
+                return False
 
-    if startTime <= currentTime:
+    if start_time <= datetime.now():
         return False
 
     return True
 
-#4 check whether a registration ID already exists
-def registrationExists(
-    registrationID: int,
-    registrations: list
-) -> bool:
-
-    for registration in registrations:
-        if registration.registrationID == registrationID:
-            return True
-
-    return False
-
-#5 check whether a time is in the future
-def timeValid(time: str, currentTime: str) -> bool:
-    return time > currentTime
-
-
-# POST: Register a participant for an event
 @app.post("/api/v1/registrations")
 def registerEvent():
     body = request.get_json(silent=True) or {}
-
     eventID = body.get("eventID")
     userID = body.get("userID")
 
     if type(eventID) is not int or eventID <= 0:
         return jsonify({"error": "eventID must be a positive integer"}), 400
-
     if type(userID) is not int or userID <= 0:
         return jsonify({"error": "userID must be a positive integer"}), 400
 
-    registrations = loadDatabase()
-    events = loadEvents()
-    participants = loadParticipants()
+    db = get_db()
 
-    if not eventExists(eventID, events):
+    if not event_exists(eventID, db):
+        db.close()
         return jsonify({"error": "Event does not exist"}), 404
 
-    if not participantExists(userID, participants):
+    if not participant_exists(userID, db):
+        db.close()
         return jsonify({"error": "Participant does not exist"}), 404
 
-    for registration in registrations:
-        if (
-            registration.eventID == eventID
-            and registration.userID == userID
-        ):
-            return jsonify({
-                "error": "Participant already registered!"
-            }), 409
+    if already_registered(eventID, userID, db):
+        db.close()
+        return jsonify({"error": "Participant already registered!"}), 409
 
-    currentTime = datetime.now()
+    if not registration_allowed(eventID, db):
+        db.close()
+        return jsonify({"error": "Event is full or has already started"}), 400
 
-    if not registrationChecker(
-        eventID, registrations, events, currentTime
-    ):
-        return jsonify({
-            "error": "Event is full or has already started"
-        }), 400
-
-    registrationID = 1
-
-    for registration in registrations:
-        if registration.registrationID >= registrationID:
-            registrationID = registration.registrationID + 1
-
-    newRegistration = Registration(
-        registrationID,
-        eventID,
-        userID,
-        currentTime.strftime("%Y-%m-%d %H:%M:%S")
+    cursor = db.cursor(dictionary=True)
+    # currentTime has DEFAULT CURRENT_TIMESTAMP, so we can omit it
+    # or supply it explicitly – both work
+    cursor.execute(
+        """
+        INSERT INTO registrations (eventID, userID)
+        VALUES (%s, %s)
+        """,
+        (eventID, userID),
     )
+    db.commit()
+    new_id = cursor.lastrowid
 
-    registrations.append(newRegistration)
-    saveDatabase(registrations)
+    # fetch the row we just inserted so we can return the real timestamp
+    cursor.execute(
+        """
+        SELECT registrationID, eventID, userID, currentTime AS registeredAt
+        FROM registrations
+        WHERE registrationID = %s
+        """,
+        (new_id,),
+    )
+    row = cursor.fetchone()
+    cursor.close()
+    db.close()
 
-    return jsonify({"data": newRegistration.toDict()}), 201
+    if row and hasattr(row["registeredAt"], "strftime"):
+        row["registeredAt"] = row["registeredAt"].strftime("%Y-%m-%d %H:%M:%S")
 
+    return jsonify({"data": row}), 201
 
-# GET: List all registrations
 @app.get("/api/v1/registrations")
 def listRegistrations():
-    registrations = loadDatabase()
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        """
+        SELECT registrationID, eventID, userID, currentTime AS registeredAt
+        FROM registrations
+        ORDER BY registrationID
+        """
+    )
+    rows = cursor.fetchall()
+    cursor.close()
+    db.close()
 
-    return jsonify({
-        "data": [
-            registration.toDict()
-            for registration in registrations
-        ]
-    }), 200
+    for row in rows:
+        if row.get("registeredAt") and hasattr(row["registeredAt"], "strftime"):
+            row["registeredAt"] = row["registeredAt"].strftime("%Y-%m-%d %H:%M:%S")
 
+    return jsonify({"data": rows}), 200
 
-# DELETE: Cancel a participant's registration
 @app.delete("/api/v1/registrations/<int:eventID>/<int:userID>")
 def cancelRegistration(eventID, userID):
-    registrations = loadDatabase()
-    events = loadEvents()
-    participants = loadParticipants()
+    db = get_db()
 
-    if not eventExists(eventID, events):
+    if not event_exists(eventID, db):
+        db.close()
         return jsonify({"error": "Event does not exist"}), 404
 
-    if not participantExists(userID, participants):
+    if not participant_exists(userID, db):
+        db.close()
         return jsonify({"error": "Participant does not exist"}), 404
 
-    for registration in registrations:
-        if (
-            registration.eventID == eventID
-            and registration.userID == userID
-        ):
-            registrations.remove(registration)
-            saveDatabase(registrations)
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        """
+        DELETE FROM registrations
+        WHERE eventID = %s AND userID = %s
+        """,
+        (eventID, userID),
+    )
+    deleted = cursor.rowcount
+    db.commit()
+    cursor.close()
+    db.close()
 
-            return jsonify({
-                "message": "Registration successfully canceled"
-            }), 200
+    if deleted == 0:
+        return jsonify({"error": "Registration does not exist"}), 404
 
-    return jsonify({
-        "error": "Registration does not exist"
-    }), 404
+    return jsonify({"message": "Registration successfully canceled"}), 200
 
-
-# GET: List participants registered for an event
 @app.get("/api/v1/registrations/events/<int:eventID>/participants")
 def listEventParticipants(eventID):
-    events = loadEvents()
-    participants = loadParticipants()
-    registrations = loadDatabase()
+    db = get_db()
 
-    if not eventExists(eventID, events):
+    if not event_exists(eventID, db):
+        db.close()
         return jsonify({"error": "Event does not exist"}), 404
 
-    result = []
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        """
+        SELECT p.userID, p.name, p.email
+        FROM participants p
+        INNER JOIN registrations r ON p.userID = r.userID
+        WHERE r.eventID = %s
+        ORDER BY p.userID
+        """,
+        (eventID,),
+    )
+    rows = cursor.fetchall()
+    cursor.close()
+    db.close()
 
-    for registration in registrations:
-        if registration["eventID"] == eventID:
-            for participant in participants:
-                if participant["id"] == registration["userID"]:
-                    result.append(participant)
-                    break
-
-    return jsonify({"data": result}), 200
-
+    return jsonify({"data": rows}), 200
 
 if __name__ == "__main__":
-    #print(participantExists(1, [Registration(1,1,1,datetime.now().strftime("%Y-%m-%d %H:%M:%S"))]))
     app.run(host="0.0.0.0", port=5000, debug=True)
