@@ -76,6 +76,15 @@ def test_create_registration_success(client, mocked_database):
 def test_create_duplicate_registration(client, mocked_database):
     mock_load_db, mock_save_db, _, _ = mocked_database
     mock_load_db.return_value = [
+<<<<<<< HEAD:tests/registration_testing.py
+=======
+#        {
+#            "registrationID": 1,
+#            "eventID": 1,
+#            "userID": 1,
+#            "registeredAt": "2026-10-01 12:00:00",
+#        }
+>>>>>>> f52dc0e8b5f5b5d9a412faf77f14183574640c90:tests/registration_test.py
         Registration(1, 1, 1, "2026-10-01 12:00:00")
     ]
     response = client.post(
@@ -113,6 +122,7 @@ def test_create_registration_nonexistent_participant(client, mocked_database):
 
 
 # Tests registration when an event is full
+# Error Code 400?
 def test_create_registration_full_event(client, mocked_database):
     _, mock_save_db, _, _ = mocked_database
 
@@ -163,6 +173,15 @@ def test_create_registration_invalid_ids(client, mocked_database, payload):
 def test_get_registrations(client, mocked_database):
     mock_load_db, _, _, _ = mocked_database
     mock_load_db.return_value = [
+<<<<<<< HEAD:tests/registration_testing.py
+=======
+#        {
+#            "registrationID": 1,
+#            "eventID": 1,
+#            "userID": 1,
+#            "registeredAt": "2026-10-01 12:00:00",
+#        }
+>>>>>>> f52dc0e8b5f5b5d9a412faf77f14183574640c90:tests/registration_test.py
         Registration(1, 1, 1, "2026-10-01 12:00:00")
     ]
     response = client.get("/api/v1/registrations")
@@ -192,7 +211,17 @@ def test_get_participants_nonexistent_event(client, mocked_database):
 def test_delete_registration(client, mocked_database):
     mock_load_db, mock_save_db, _, _ = mocked_database
     mock_load_db.return_value = [
+<<<<<<< HEAD:tests/registration_testing.py
         Registration(1, 1, 1, "2026-10-01 12:00:00")
+=======
+#        {
+#            "registrationID": 1,
+#            "eventID": 1,
+#            "userID": 1,
+#            "registeredAt": "2026-10-01 12:00:00",
+#        }
+	Registration(1, 1, 1, "2026-10-01 12:00:00")
+>>>>>>> f52dc0e8b5f5b5d9a412faf77f14183574640c90:tests/registration_test.py
     ]
     response = client.delete("/api/v1/registrations/1/1")
     assert response.status_code == 200

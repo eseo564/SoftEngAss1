@@ -3,17 +3,16 @@
 -- participant name and email
 -- does not check for registration time. left to main
 
-CREATE DATABASE assignment1;
+CREATE DATABASE eventsBooking;
 
-USE assignment1;
+USE eventsBooking;
 
 --Create Tables
 CREATE TABLE events (
-    id int AUTO_INCREMENT PRIMARY KEY,
+    eventID int AUTO_INCREMENT PRIMARY KEY,
     name varchar(255) NOT NULL,
-    date DATE NOT NULL,
-    time TIME NOT NULL,
-    capicity int UNSIGNED NOT NULL,
+    startTime datetime NOT NULL,
+    capacity int UNSIGNED NOT NULL,
     location varchar(255) NOT NULL 
 );
 
@@ -28,28 +27,34 @@ CREATE TABLE registrations (
     eventID int NOT NULL,
     userID int NOT NULL,
     CONSTRAINT uniqueRegistration UNIQUE (eventID, userID),
-    FOREIGN KEY (eventID) REFERENCES events(id),
+    FOREIGN KEY (eventID) REFERENCES events(eventID),
     FOREIGN KEY (userID) REFERENCES participants(userID),
     currentTime DATETIME DEFAULT CURRENT_TIMESTAMP
 );
    
 -- Seed Tables
-INSERT INTO events (name, date, time, capicity, location)
+INSERT INTO events (name, startTime, capacity, location)
 VALUES
-   ('Python Workshop', '2027-07-15', '09:00:00', 220, 'Telus Sparks'),
-   ('Christmas', '2026-12-25', '00:00:00', 10, 'Home'),
-   ('Otafest', '2026-04-12', '08:00:00', 60, 'Garage');
+   ('Python Workshop', '2027-07-15 09:00', 220, 'Telus Sparks'),
+   ('Christmas', '2026-12-25 00:00', 10, 'Home'),
+   ('Otafest', '2026-04-12 08:00', 60, 'Garage');
 
 INSERT INTO participants (name, email) 
 VALUES
-   ('Nicholas Christie', 'nchri421@mtroyal.ca'),
-   ('Tiara Misu', 'food.vlogs@gmail.com'),
-   ('Edward Smith', 'ed.smith.1969@gmail.com'),
-   ('Jane Doe', 'jane.doe@email.com'),
-   ('John Doe', 'fake.email@microslop.com');
+   ('Vincent Ha', 'vhatest@gmail.com'),
+   ('Lever Less', 'lltriplel@gmail.com'),
+   ('Delta Force', 'dfundefined@gmail.ca'),
+   ('Canyon Meadows', 'canyonmeds@live.ca'),
+   ('Filter Five', 'fillerfive@hotmail.ca');
 
 INSERT INTO registrations (eventID, userID, currentTime)
 VALUES
+<<<<<<< HEAD
    (1, 1, '2026-10-15 10:30:00'),
    (1, 2, '2026-10-16 14:15:00'),
    (3, 3, '2026-10-17 09:00:00');
+=======
+   (1, 1, '2026-10-15 10:30'),
+   (1, 2, '2026-10-16 14:15'),
+   (3, 3, '2026-10-17 09:00');
+>>>>>>> f52dc0e8b5f5b5d9a412faf77f14183574640c90
