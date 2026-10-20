@@ -1,9 +1,8 @@
-
 from unittest.mock import patch
 
 import pytest
 import Registration as api_module
-from Registration import app as flask_app
+from Registration import app as flask_app, Registration
 
 
 @pytest.fixture()
@@ -47,8 +46,8 @@ def mocked_database():
         ]
 
         mock_load_participants.return_value = [
-            {"userID": 1, "name": "Jane Doe"},
-            {"userID": 2, "name": "Gru"},
+            {"id": 1, "name": "Jane Doe"},
+            {"id": 2, "name": "Gru"},
         ]
 
         yield (
@@ -76,21 +75,13 @@ def test_create_registration_success(client, mocked_database):
 # Tests that duplicate registrations are rejected
 def test_create_duplicate_registration(client, mocked_database):
     mock_load_db, mock_save_db, _, _ = mocked_database
-
     mock_load_db.return_value = [
-        {
-            "registrationID": 1,
-            "eventID": 1,
-            "userID": 1,
-            "registeredAt": "2026-10-01 12:00:00",
-        }
+        Registration(1, 1, 1, "2026-10-01 12:00:00")
     ]
-
     response = client.post(
         "/api/v1/registrations",
         json={"eventID": 1, "userID": 1},
     )
-
     assert response.status_code == 409
     mock_save_db.assert_not_called()
 
@@ -130,7 +121,7 @@ def test_create_registration_full_event(client, mocked_database):
         json={"eventID": 2, "userID": 1},
     )
 
-    assert response.status_code == 409
+    assert response.status_code == 400
     mock_save_db.assert_not_called()
 
 
@@ -171,18 +162,10 @@ def test_create_registration_invalid_ids(client, mocked_database, payload):
 # Tests retrieving all registrations
 def test_get_registrations(client, mocked_database):
     mock_load_db, _, _, _ = mocked_database
-
     mock_load_db.return_value = [
-        {
-            "registrationID": 1,
-            "eventID": 1,
-            "userID": 1,
-            "registeredAt": "2026-10-01 12:00:00",
-        }
+        Registration(1, 1, 1, "2026-10-01 12:00:00")
     ]
-
     response = client.get("/api/v1/registrations")
-
     assert response.status_code == 200
     assert response.get_json() is not None
 
@@ -190,18 +173,10 @@ def test_get_registrations(client, mocked_database):
 # Tests retrieving participants registered for an event
 def test_get_event_participants(client, mocked_database):
     mock_load_db, _, _, _ = mocked_database
-
     mock_load_db.return_value = [
-        {
-            "registrationID": 1,
-            "eventID": 1,
-            "userID": 1,
-            "registeredAt": "2026-10-01 12:00:00",
-        }
+        Registration(1, 1, 1, "2026-10-01 12:00:00")
     ]
-
     response = client.get("/api/v1/registrations/events/1/participants")
-
     assert response.status_code == 200
     assert response.get_json() is not None
 
@@ -216,18 +191,10 @@ def test_get_participants_nonexistent_event(client, mocked_database):
 # Tests cancelling an existing registration
 def test_delete_registration(client, mocked_database):
     mock_load_db, mock_save_db, _, _ = mocked_database
-
     mock_load_db.return_value = [
-        {
-            "registrationID": 1,
-            "eventID": 1,
-            "userID": 1,
-            "registeredAt": "2026-10-01 12:00:00",
-        }
+        Registration(1, 1, 1, "2026-10-01 12:00:00")
     ]
-
     response = client.delete("/api/v1/registrations/1/1")
-
     assert response.status_code == 200
     mock_save_db.assert_called_once()
 
