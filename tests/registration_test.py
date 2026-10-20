@@ -70,7 +70,7 @@ def test_create_duplicate_registration(client, mocked_database):
     )
 
     assert response.status_code == 409
-    assert response.get_json() == {"error": "Participant already registered"}
+    assert response.get_json() == {"error": "Participant already registered!"}
     mock_connection.commit.assert_not_called()
 
 
