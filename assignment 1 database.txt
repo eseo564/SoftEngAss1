@@ -41,11 +41,11 @@ VALUES
 
 INSERT INTO participants (name, email) 
 VALUES
-   ('Nicholas Christie', 'nchri421@mtroyal.ca'),
-   ('Tiara Misu', 'food.vlogs@gmail.com'),
-   ('Edward Smith', 'ed.smith.1969@gmail.com'),
-   ('Jane Doe', 'jane.doe@email.com'),
-   ('John Doe', 'fake.email@microslop.com');
+   ('Vincent Ha', 'vhatest@gmail.com'),
+   ('Lever Less', 'lltriplel@gmail.com'),
+   ('Delta Force', 'dfundefined@gmail.ca'),
+   ('Canyon Meadows', 'canyonmeds@live.ca'),
+   ('Filter Five', 'fillerfive@hotmail.ca');
 
 INSERT INTO registrations (eventID, userID, currentTime)
 VALUES
