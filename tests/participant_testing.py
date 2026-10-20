@@ -96,4 +96,10 @@ def testInvalidEmail(email, expected):
 
 
 def testParticipantEquality():
-	...
+	a = Participant(1, "John Smith", "john.smith@email.com")
+	b = Participant(2, "John Smith", "john.smith@email.com")
+	c = Participant(3, "Nicholas Paul Christie", "nchri@mtroyal.ca")
+
+	assert a == b
+	assert a != c
+	assert a != object()
