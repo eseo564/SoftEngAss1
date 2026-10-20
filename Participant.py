@@ -219,9 +219,9 @@ def updateParticipant(userID):
 
 
 
-if (__name__ == "__main__"):
-	try:
-		db = loadParticipantDatabase()
-	except Exception as e:
-		print(e)
-		input()
+#if (__name__ == "__main__"):
+#	try:
+#		db = loadParticipantDatabase()
+#	except Exception as e:
+#		print(e)
+#		input()

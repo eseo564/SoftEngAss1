@@ -1,9 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Blueprint, Flask, request, jsonify
 from db import get_db
 #from mock_db import get_db, add_event
 from datetime import datetime
 
 app = Flask(__name__)
+event_bp = Blueprint('event', __name__)
 
 # added create
 @app.post("/api/v1/events")
@@ -44,8 +45,8 @@ def createEvent():
 
     return jsonify(event), 201
 
-
-@app.get("/api/v1/events")
+@event_bp.route('/events', methods=['GET'])
+#@app.get("/api/v1/events")
 def listEvents():
     name_query = request.args.get("name")
     db = get_db()
@@ -251,6 +252,3 @@ def checkReqs(name, startTime, capacity, location):
 
     except ValueError:
         return jsonify({"error": "wrong time format (YYYY/MM/DD XX:XX)"}),400
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)

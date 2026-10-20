@@ -295,6 +295,6 @@ def listEventParticipants(eventID):
     return jsonify({"data": result}), 200
 
 
-if __name__ == "__main__":
+#if __name__ == "__main__":
     #print(participantExists(1, [Registration(1,1,1,datetime.now().strftime("%Y-%m-%d %H:%M:%S"))]))
-    app.run(host="0.0.0.0", port=5000, debug=True)
+#    app.run(host="0.0.0.0", port=5000, debug=True)
