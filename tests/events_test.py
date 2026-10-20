@@ -4,6 +4,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 import Event as api_module
 from Event import app as flask_app
+#moved mock data base to tests only
+from mock_db import get_db, add_event
 
 @pytest.fixture()
 def client():

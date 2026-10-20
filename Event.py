@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
-#from db import get_db
-from mock_db import get_db, add_event
+from db import get_db
+#from mock_db import get_db, add_event
 from datetime import datetime
 
 app = Flask(__name__)

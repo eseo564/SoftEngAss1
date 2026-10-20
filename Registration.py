@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from datetime import datetime
-
+from db import get_db
 import json
 
 app = Flask(__name__)
