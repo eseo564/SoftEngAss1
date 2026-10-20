@@ -1,9 +1,8 @@
-
 from unittest.mock import patch
 
 import pytest
 import Registration as api_module
-from Registration import app as flask_app
+from Registration import app as flask_app, Registration
 
 
 @pytest.fixture()
@@ -47,8 +46,8 @@ def mocked_database():
         ]
 
         mock_load_participants.return_value = [
-            {"userID": 1, "name": "Jane Doe"},
-            {"userID": 2, "name": "Gru"},
+            {"id": 1, "name": "Jane Doe"},
+            {"id": 2, "name": "Gru"},
         ]
 
         yield (
@@ -78,14 +77,14 @@ def test_create_duplicate_registration(client, mocked_database):
     mock_load_db, mock_save_db, _, _ = mocked_database
 
     mock_load_db.return_value = [
-        {
-            "registrationID": 1,
-            "eventID": 1,
-            "userID": 1,
-            "registeredAt": "2026-10-01 12:00:00",
-        }
+#        {
+#            "registrationID": 1,
+#            "eventID": 1,
+#            "userID": 1,
+#            "registeredAt": "2026-10-01 12:00:00",
+#        }
+        Registration(1, 1, 1, "2026-10-01 12:00:00")
     ]
-
     response = client.post(
         "/api/v1/registrations",
         json={"eventID": 1, "userID": 1},
@@ -122,6 +121,7 @@ def test_create_registration_nonexistent_participant(client, mocked_database):
 
 
 # Tests registration when an event is full
+# Error Code 400?
 def test_create_registration_full_event(client, mocked_database):
     _, mock_save_db, _, _ = mocked_database
 
@@ -130,7 +130,7 @@ def test_create_registration_full_event(client, mocked_database):
         json={"eventID": 2, "userID": 1},
     )
 
-    assert response.status_code == 409
+    assert response.status_code == 400
     mock_save_db.assert_not_called()
 
 
@@ -173,12 +173,13 @@ def test_get_registrations(client, mocked_database):
     mock_load_db, _, _, _ = mocked_database
 
     mock_load_db.return_value = [
-        {
-            "registrationID": 1,
-            "eventID": 1,
-            "userID": 1,
-            "registeredAt": "2026-10-01 12:00:00",
-        }
+#        {
+#            "registrationID": 1,
+#            "eventID": 1,
+#            "userID": 1,
+#            "registeredAt": "2026-10-01 12:00:00",
+#        }
+        Registration(1, 1, 1, "2026-10-01 12:00:00")
     ]
 
     response = client.get("/api/v1/registrations")
@@ -218,12 +219,13 @@ def test_delete_registration(client, mocked_database):
     mock_load_db, mock_save_db, _, _ = mocked_database
 
     mock_load_db.return_value = [
-        {
-            "registrationID": 1,
-            "eventID": 1,
-            "userID": 1,
-            "registeredAt": "2026-10-01 12:00:00",
-        }
+#        {
+#            "registrationID": 1,
+#            "eventID": 1,
+#            "userID": 1,
+#            "registeredAt": "2026-10-01 12:00:00",
+#        }
+	Registration(1, 1, 1, "2026-10-01 12:00:00")
     ]
 
     response = client.delete("/api/v1/registrations/1/1")

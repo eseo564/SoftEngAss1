@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from datetime import datetime
+
 import json
 
 app = Flask(__name__)
@@ -99,10 +100,11 @@ def eventExists(eventID: int, events: list) -> bool:
             return True
     return False
 
+# not handing in right list handing list of participants when it should be list of registration
 #2 check if a participant ID exists
-def participantExists(userID: int, participants: list) -> bool:
+def participantExists(id: int, participants: list) -> bool:
     for participant in participants:
-        if participant["userID"] == userID:
+        if participant["id"] == id:
             return True
     return False
 
@@ -280,9 +282,9 @@ def listEventParticipants(eventID):
     result = []
 
     for registration in registrations:
-        if registration.eventID == eventID:
+        if registration["eventID"] == eventID:
             for participant in participants:
-                if participant["userID"] == registration.userID:
+                if participant["id"] == registration["userID"]:
                     result.append(participant)
                     break
 
@@ -290,4 +292,5 @@ def listEventParticipants(eventID):
 
 
 if __name__ == "__main__":
+    #print(participantExists(1, [Registration(1,1,1,datetime.now().strftime("%Y-%m-%d %H:%M:%S"))]))
     app.run(host="0.0.0.0", port=5000, debug=True)

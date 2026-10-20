@@ -2,7 +2,7 @@ from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
 import pytest
-import app as api_module
+import Event as api_module
 from Event import app as flask_app
 
 @pytest.fixture()
@@ -13,7 +13,7 @@ def client():
 
 @pytest.fixture()
 def mocked_database():
-    with patch("Event2.get_db") as mock_get_db:
+    with patch("Event.get_db") as mock_get_db:
         mock_connection = MagicMock()
         mock_cursor = MagicMock()
 
