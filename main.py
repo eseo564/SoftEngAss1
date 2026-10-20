@@ -1,10 +1,12 @@
 from flask import Flask, request, jsonify
 from db import get_db
-import Event as api_module
-import Registration as api_module
-import Participant as api_module
+from Event import event_bp
+#import Registration as api_module
+#import Participant as api_module
 
 app = Flask(__name__)
+
+app.register_blueprint(event_bp)
 
 @app.get("/api")
 def health():
