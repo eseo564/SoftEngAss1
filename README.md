@@ -38,13 +38,10 @@ The API was developed and deployed using Google Cloud Compute Engine. The follow
 
 ### 2. Database Initialization
 
-- Initialize the database or load the mock data according to the project configuration.
-- If a seed script is provided, run it to preload fictional participant records and any required event data:
-  ```bash
-  python SEED_FILE.py
-  ```
-- Replace `SEED_FILE.py` with the actual seed script filename.
-- If mock data loads automatically when the application starts, a separate initialization command may not be required.
+- Our version of the application uses a database hosted on Google Cloud.
+- Configure the database connection using the provided environment variables.
+- Ensure the database schema and required tables are created before running the application.
+- If the database is already populated with the required fictional participant and event records, no additional seeding is necessary.
 
 ### 3. Command Environments and Working Directories
 
@@ -52,18 +49,18 @@ The API was developed and deployed using Google Cloud Compute Engine. The follow
   ```bash
   source .venv/bin/activate
   ```
-- **Working directory:** Run commands from the project root directory, where `app.py`, `requirements.txt`, and the `tests/` directory are located.
+- **Working directory:** Run commands from the project root directory, where `main.py`, `requirements.txt`, and the `tests/` directory are located.
 - If you are in a different directory, navigate to the project root:
   ```bash
   cd YOUR_PROJECT_DIRECTORY
   ```
-- **Main application file:** `app.py` is the main entry point for running the API locally.
+- **Main application file:** `main.py` is the main entry point for running the API locally.
 
 ### 4. Running the API Locally
 
 - From the project root directory, start the Flask application:
   ```bash
-  python app.py
+  python main.py
   ```
 - If the application is configured to use port 5000, access it at:
   ```text
@@ -89,7 +86,7 @@ The API is deployed using Google Cloud Compute Engine, which runs the applicatio
 
 - **Cloud platform:** Google Cloud
 - **Compute service:** Compute Engine
-- **Deployed API URL:** YOUR_GOOGLE_CLOUD_API_URL
+- **Deployed API URL:** YOUR_GOOGLE_CLOUD_API_URL (external)
 
 Replace the URL placeholder with the public URL or IP address of the deployed API.
 
@@ -115,16 +112,16 @@ All tests use Flask to send requests to the API and verify the expected response
 
 **Command environment:** Activated Python virtual environment.
 
-**Working directory:** Project root directory, where `app.py` and the `tests/` folder are located.
+**Working directory:** Project root directory, where `main.py` and the `tests/` folder are located.
 
 #### Running Tests for Individual Classes
 
 Run the tests for each class separately:
 
 ```bash
-python -m pytest -v tests/events_testing.py
-python -m pytest -v tests/registration_testing.py
-python -m pytest -v tests/participant_testing.py
+python -m pytest -v tests/events_test.py
+python -m pytest -v tests/registration_test.py
+python -m pytest -v tests/participant_test.py
 ```
 
 ### Running Integration Tests
@@ -137,12 +134,12 @@ python -m pytest -v tests/
 ```
 
 ## Known Limitations
-
+- No idempotency key, so in the event that a duplicate request occurs, the server will fulfill that secondary request.
+  - Rejecting a duplicate registration is handled within the code. 
 - Participants are fictional records preloaded using a seed script. The API does not support creating new participants.
 - Participant search, filtering, and booking history are not supported.
 - The API does not include authentication or participant account management.
 - Participant information is limited to the fields provided in the existing dataset.
-- If mock data is stored in memory, changes may not persist after the application restarts.
 - Events do not support waitlisting when capacity is reached.
 - The API only supports the endpoints and functionality implemented in the project.
   
