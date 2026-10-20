@@ -35,9 +35,9 @@ CREATE TABLE registrations (
 -- Seed Tables
 INSERT INTO events (name, startTime, capacity, location)
 VALUES
-   ('Python Workshop', '2027-07-15', '09:00:00', 220, 'Telus Sparks'),
-   ('Christmas', '2026-12-25', '00:00:00', 10, 'Home'),
-   ('Otafest', '2026-04-12', '08:00:00', 60, 'Garage');
+   ('Python Workshop', '2027-07-15 09:00', 220, 'Telus Sparks'),
+   ('Christmas', '2026-12-25 00:00', 10, 'Home'),
+   ('Otafest', '2026-04-12 08:00', 60, 'Garage');
 
 INSERT INTO participants (name, email) 
 VALUES
@@ -49,6 +49,6 @@ VALUES
 
 INSERT INTO registrations (eventID, userID, currentTime)
 VALUES
-   (1, 1, '2026-10-15 10:30:00'),
-   (1, 2, '2026-10-16 14:15:00'),
-   (3, 3, '2026-10-17 09:00:00');
+   (1, 1, '2026-10-15 10:30'),
+   (1, 2, '2026-10-16 14:15'),
+   (3, 3, '2026-10-17 09:00');

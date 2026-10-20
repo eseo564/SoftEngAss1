@@ -5,27 +5,27 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+# added create
 @app.post("/api/v1/events")
 def createEvent():
     body = request.get_json(silent=True) or {}
     name = body.get("name")
-    date = body.get("date")
-    time = body.get("time")
+    startTime = body.get("startTime")
     capacity = body.get("capacity")
     location = body.get("location")
 
-    error_response = checkReqs(name, date, time, capacity, location)
-    if error_response: 
+    error_response = checkReqs(name, startTime, capacity, location)
+    if error_response:
         return error_response
 
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute (
         """
-        INSERT INTO events(name, date, time, capacity, location) 
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT INTO events (name, startTime, capacity, location)
+        VALUES (%s, %s, %s, %s)
         """,
-        (str(name).strip(), date, time, capacity, str(location).strip()),
+        (str(name).strip(), startTime, capacity, str(location).strip()),
     )
     conn.commit()
     new_id = cursor.lastrowid
@@ -33,57 +33,58 @@ def createEvent():
     conn.close()
 
     event = {
-		"id":  new_id,
-        "name" : str(name).strip(),
-        "date":	date,
-        "time": time,
-        "capacity": capacity,
-        "location": location,
+        "data": {
+	    "eventID": new_id,
+            "name" : str(name).strip(),
+            "startTime": startTime,
+            "capacity": capacity,
+            "location": location,
+        }
     }
-	
-    return jsonify({"data": event}), 201
-    
+
+    return jsonify(event), 201
+
 
 @app.get("/api/v1/events")
 def listEvents():
     name_query = request.args.get("name")
-    db= get_db()
+    db = get_db()
     cursor = db.cursor(dictionary=True)
-
     if name_query:
         q = f"%{name_query.strip().lower()}%"
         cursor.execute(
             """
-            SELECT id, name
+            SELECT eventID, name
             FROM events
             WHERE LOWER(name) LIKE %s
-            ORDER BY id
+            ORDER BY eventID
             """,
             (q,),
         )
     else:
         cursor.execute(
             """
-            SELECT id, name
+            SELECT eventID, name
             FROM events
-            ORDER BY id
+            ORDER BY eventID
             """
         )
 
     events = cursor.fetchall()
+
     cursor.close()
     db.close()
     return jsonify({"data": events}), 200
 
 @app.get("/api/v1/events/<int:eventID>")
 def retrieveEvent(eventID):
-    db= get_db()
+    db = get_db()
     cursor = db.cursor(dictionary=True)
     cursor.execute(
         """
-        SELECT id, name, date, time, capacity, location
+        SELECT eventID, name, startTime, capacity, location
         FROM events
-	WHERE id = %s
+	WHERE eventID = %s
         """,
         (eventID,),
     )
@@ -111,7 +112,7 @@ def deleteEvent(eventID):
     cursor.execute(
         """
         DELETE FROM events
-        WHERE id = %s
+        WHERE eventID = %s
         """,
         (eventID,),
     )
@@ -129,18 +130,17 @@ def deleteEvent(eventID):
 def updateEvent(eventID):
     body = request.get_json(silent=True) or {}
     name = body.get("name")
-    date = body.get("date")
-    time = body.get("time")
+    startTime = body.get("startTime")
     capacity = body.get("capacity")
     location = body.get("location")
 
     #check to see if the input is correct
-    error_response = checkReqs(name, date, time, capacity, location)
-    if error_response: 
+    error_response = checkReqs(name, startTime, capacity, location)
+    if error_response:
         return error_response
 
     db = get_db()
-    
+
     #check to see if the event exists
     db_event_response = checkEvent(eventID, db)
     if db_event_response:
@@ -150,33 +150,32 @@ def updateEvent(eventID):
     db_capacity_response = checkCapacity(eventID, capacity, db)
     if db_capacity_response:
         return db_capacity_response
-    
+
     cursor = db.cursor(dictionary=True)
 
     cursor.execute(
         """
         UPDATE events
-        SET name = %s, date = %s, location = %s, time = %s, capacity = %s
-        WHERE id = %s
+        SET name = %s, startTime = %s, capicity = %s, location = %s
+        WHERE eventID = %s
         """,
-        (str(name).strip(), date, str(location).strip(), time, capacity, eventID)
+        (str(name).strip(), startTime, capacity, str(location).strip(), eventID)
     )
 
     db.commit()
     cursor.close()
-    db.close() 
+    db.close()
 
     updated_event = {
-        "id": eventID,
+        "eventID": eventID,
         "name": str(name).strip(),
-        "date": date,
-        "time": time,
+        "startTime": startTime,
         "capacity": capacity,
         "location": str(location).strip(),
     }
-    
+
     return jsonify({"data": updated_event}), 200
-    
+
 '''Helper functions'''
 #gave the db as a parameter to avoid opening and closing the db multiple times
 def checkEvent(eventID, db):
@@ -184,9 +183,9 @@ def checkEvent(eventID, db):
 
     cursor.execute(
         """
-        SELECT id
+        SELECT eventID
         FROM events
-        WHERE id = %s
+        WHERE eventID = %s
         """,
         (eventID,),
     )
@@ -200,7 +199,7 @@ def checkEvent(eventID, db):
         }), 404
 
     return None
-    
+
 def checkCapacity(eventID, capacity, db):
     cursor = db.cursor(dictionary=True)
 
@@ -208,25 +207,26 @@ def checkCapacity(eventID, capacity, db):
         """
         SELECT COUNT(*) AS current_registrations
         FROM registrations
-        WHERE event_id = %s
+        WHERE eventID = %s
         """,
         (eventID,)
     )
 
     count_row = cursor.fetchone()
+    print (count_row)
     current_count = count_row["current_registrations"]
 
     if capacity < current_count:
         cursor.close()
-        db.close() 
+        db.close()
         return jsonify({"error": "changing amount lower than registered amount"}),400
 
     cursor.close()
     db.close()
-    return None   
+    return None
 
 
-def checkReqs(name, date, time, capacity, location):
+def checkReqs(name, startTime, capacity, location):
     if not name or not str(name).strip():
         return jsonify({"error": "name is required"}),400
 
@@ -240,31 +240,17 @@ def checkReqs(name, date, time, capacity, location):
     else:
         return jsonify({"error": "capacity must be an integer"}), 400
 
-    #checks if date is the right format
+    #checks if startTime is the right format
+
     try:
-        datetime.strptime(date, "%m/%d/%Y")
+         time = datetime.strptime(startTime, "%Y/%m/%d %H:%M")
+
+         #checks if the start time is in the future
+         if time < datetime.now():
+             return jsonify({"error": "start time must be in the future"}), 400
 
     except ValueError:
-        return jsonify({"error": "wrong date format (MM/DD/YYYY)"}),400
-
-    #checks if time is in the right format
-    try:
-        datetime.strptime(time, "%H:%M")
-
-    except ValueError:
-        return jsonify({"error": "wrong time format (XX:XX)"}), 400
-
-    #checks if the start time is in the future
-    try:
-        event_datetime_str = f"{date} {time}"
-        event_datetime = datetime.strptime(event_datetime_str, "%m/%d/%Y %H:%M" )
-
-        if event_datetime < datetime.now():
-            return jsonify({"error": "start time must be in the future"}), 400
-
-    except ValueError:
-        return jsonify({"error": "wrong date or time format"}), 400
-
+        return jsonify({"error": "wrong time format (YYYY/MM/DD XX:XX)"}),400
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

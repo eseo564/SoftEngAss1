@@ -1,20 +1,18 @@
 
 # mock_db.py
 
-EVENTS = [
+events = [
     {
         "id": 1,
         "name": "Game Night",
-        "date": "10/20/2026",
-        "time": "18:00",
+        "startTime": "10/20/2026 18:00",
         "capacity": 20,
         "location": "Community Hall"
     },
     {
         "id": 2,
         "name": "Coding Workshop",
-        "date": "10/22/2026",
-        "time": "14:00",
+        "startTime": "10/22/2026 14:00",
         "capacity": 15,
         "location": "Library"
     }
@@ -105,7 +103,6 @@ class MockConnection:
 
     def close(self):
         pass
-
 
 def get_db():
     return MockConnection()
