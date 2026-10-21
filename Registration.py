@@ -138,59 +138,72 @@ def getRegistration(registrationID):
     return jsonify({"data": row}), 200
 
 
-@reg_bp.post("/api/v1/registrations")
-def registerEvent():
-    body = request.get_json(silent=True) or {}
-    eventID = body.get("eventID")
-    userID = body.get("userID")
 
-    if type(eventID) is not int or eventID <= 0:
+@reg_bp.post("/api/v1/registrations/<int:eventID>/<int:userID>")
+def registerEvent(eventID, userID):
+    if eventID <= 0:
         return jsonify({"error": "eventID must be a positive integer"}), 400
-    if type(userID) is not int or userID <= 0:
+
+    if userID <= 0:
         return jsonify({"error": "userID must be a positive integer"}), 400
 
     db = get_db()
 
-    if not event_exists(eventID, db):
-        db.close()
-        return jsonify({"error": "Event does not exist"}), 404
-    if not participant_exists(userID, db):
-        db.close()
-        return jsonify({"error": "Participant does not exist"}), 404
-    if already_registered(eventID, userID, db):
-        db.close()
-        return jsonify({"error": "Participant already registered!"}), 409
-    if not registration_allowed(eventID, db):
-        db.close()
-        return jsonify({"error": "Event is full or has already started"}), 400
+    try:
+        if not event_exists(eventID, db):
+            return jsonify({"error": "Event does not exist"}), 404
 
-    cursor = db.cursor(dictionary=True)
-    cursor.execute(
-        """
-        INSERT INTO registrations (eventID, userID)
-        VALUES (%s, %s)
-        """,
-        (eventID, userID),
-    )
-    db.commit()
-    new_id = cursor.lastrowid
+        if not participant_exists(userID, db):
+            return jsonify({"error": "Participant does not exist"}), 404
 
-    cursor.execute(
-        """
-        SELECT registrationID, eventID, userID, currentTime AS registeredAt
-        FROM registrations
-        WHERE registrationID = %s
-        """,
-        (new_id,),
-    )
-    row = cursor.fetchone()
-    cursor.close()
-    db.close()
+        if already_registered(eventID, userID, db):
+            return jsonify({
+                "error": "Participant already registered!"
+            }), 409
 
-    if row and hasattr(row["registeredAt"], "strftime"):
-        row["registeredAt"] = row["registeredAt"].strftime("%Y-%m-%d %H:%M:%S")
+        if not registration_allowed(eventID, db):
+            return jsonify({
+                "error": "Event is full or has already started"
+            }), 400
 
-    return jsonify({"data": row}), 201
+        cursor = db.cursor(dictionary=True)
+        try:
+            cursor.execute(
+                """
+                INSERT INTO registrations (eventID, userID)
+                VALUES (%s, %s)
+                """,
+                (eventID, userID),
+            )
+            db.commit()
+            new_id = cursor.lastrowid
+
+            cursor.execute(
+                """
+                SELECT registrationID, eventID, userID,
+                       currentTime AS registeredAt
+                FROM registrations
+                WHERE registrationID = %s
+                """,
+                (new_id,),
+            )
+            row = cursor.fetchone()
+
+            if row and row.get("registeredAt"):
+                registered_at = row["registeredAt"]
+                if hasattr(registered_at, "strftime"):
+                    row["registeredAt"] = registered_at.strftime(
+                        "%Y-%m-%d %H:%M:%S"
+                    )
+
+            return jsonify({"data": row}),
+
+        finally:
+            cursor.close()
+
+    finally:
+        db.close()
+
 
 
 @reg_bp.delete("/api/v1/registrations/<int:registrationID>")
