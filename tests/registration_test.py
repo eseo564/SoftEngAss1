@@ -42,8 +42,8 @@ def test_create_registration_success(client, mocked_database):
     ]
     mock_cursor.lastrowid = 42
     response = client.post(
-        "/api/v1/registrations",
-        json={"eventID": 1, "userID": 1},
+        "/api/v1/registrations/1/1",
+        json={"currentTime": "2026/06/04 01:01"},
     )
     assert response.status_code == 201
     data = response.get_json()["data"]
@@ -192,7 +192,7 @@ def test_create_registration_past_event(client, mocked_database):
 )
 def test_create_registration_invalid_ids(client, mocked_database, payload):
     mock_get_db, mock_connection, mock_cursor = mocked_database
-    response = client.post("/api/v1/registrations", json=payload)
+    response = client.post("/api/v1/registrations")
     assert response.status_code == 400
     mock_get_db.assert_not_called()
 
