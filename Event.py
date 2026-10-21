@@ -1,7 +1,5 @@
 from flask import Blueprint, request, jsonify
-# Flask
 from db import get_db
-#from mock_db import get_db, add_event
 from datetime import datetime
 
 event_bp = Blueprint('event_bp', __name__)

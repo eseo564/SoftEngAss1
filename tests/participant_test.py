@@ -4,6 +4,7 @@ import Participant as apiModule
 from Participant import participant_bp as flaskApp
 import pytest
 
+
 @pytest.fixture()
 def client():
 	flaskApp.config.update(TESTING=True)
@@ -75,7 +76,7 @@ def testDuplicateParticipant(client, mockDatabase):
 	mockConnection.commit.assert_not_called()
 
 
-@pytest.mark.parameterize(
+@pytest.mark.parametrize(
 		"payload",
 		[
 			{}, ## Test empty dictionary input
