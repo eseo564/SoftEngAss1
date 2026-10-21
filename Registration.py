@@ -1,8 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Blueprint, request, jsonify
 from datetime import datetime
 from db import get_db
 
-app = Flask(__name__)
+reg_bp = Blueprint("reg_bp", __name__)
 
 def event_exists(eventID: int, db) -> bool:
     cursor = db.cursor(dictionary=True)
@@ -91,7 +91,7 @@ def registration_allowed(eventID: int, db) -> bool:
     return True
 
 
-@app.post("/api/v1/registrations")
+@reg_bp.post("/api/v1/registrations")
 def registerEvent():
     body = request.get_json(silent=True) or {}
     eventID = body.get("eventID")
@@ -146,7 +146,7 @@ def registerEvent():
     return jsonify({"data": row}), 201
 
 
-@app.get("/api/v1/registrations")
+@reg_bp.get("/api/v1/registrations")
 def listRegistrations():
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -168,7 +168,7 @@ def listRegistrations():
     return jsonify({"data": rows}), 200
 
 
-@app.delete("/api/v1/registrations/<int:eventID>/<int:userID>")
+@reg_bp.delete("/api/v1/registrations/<int:eventID>/<int:userID>")
 def cancelRegistration(eventID, userID):
     db = get_db()
 
@@ -198,7 +198,7 @@ def cancelRegistration(eventID, userID):
     return jsonify({"message": "Registration successfully canceled"}), 200
 
 
-@app.get("/api/v1/registrations/events/<int:eventID>/participants")
+@reg_bp.get("/api/v1/registrations/events/<int:eventID>/participants")
 def listEventParticipants(eventID):
     db = get_db()
 
