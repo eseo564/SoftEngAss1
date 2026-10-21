@@ -56,6 +56,7 @@ def registration_allowed(eventID: int, db) -> bool:
         (eventID,),
     )
     event = cursor.fetchone()
+
     if event is None:
         cursor.close()
         return False
@@ -138,17 +139,19 @@ def getRegistration(registrationID):
     return jsonify({"data": row}), 200
 
 
+@reg_bp.post("/api/v1/registrations")
+def registerEvent():
+    data = request.get_json(silent=True) or {}
+    eventID = data.get("eventID")
+    userID = data.get("userID")
 
-@reg_bp.post("/api/v1/registrations/<int:eventID>/<int:userID>")
-def registerEvent(eventID, userID):
-    if eventID <= 0:
+    # bool is a subclass of int in Python, so exclude it explicitly
+    if not isinstance(eventID, int) or isinstance(eventID, bool) or eventID <= 0:
         return jsonify({"error": "eventID must be a positive integer"}), 400
-
-    if userID <= 0:
+    if not isinstance(userID, int) or isinstance(userID, bool) or userID <= 0:
         return jsonify({"error": "userID must be a positive integer"}), 400
 
     db = get_db()
-
     try:
         if not event_exists(eventID, db):
             return jsonify({"error": "Event does not exist"}), 404
@@ -157,14 +160,10 @@ def registerEvent(eventID, userID):
             return jsonify({"error": "Participant does not exist"}), 404
 
         if already_registered(eventID, userID, db):
-            return jsonify({
-                "error": "Participant already registered!"
-            }), 409
+            return jsonify({"error": "Participant already registered!"}), 409
 
         if not registration_allowed(eventID, db):
-            return jsonify({
-                "error": "Event is full or has already started"
-            }), 400
+            return jsonify({"error": "Event is full or has already started"}), 400
 
         cursor = db.cursor(dictionary=True)
         try:
@@ -196,14 +195,11 @@ def registerEvent(eventID, userID):
                         "%Y-%m-%d %H:%M:%S"
                     )
 
-            return jsonify({"data": row}),
-
+            return jsonify({"data": row}), 201
         finally:
             cursor.close()
-
     finally:
         db.close()
-
 
 
 @reg_bp.delete("/api/v1/registrations/<int:registrationID>")
@@ -217,6 +213,7 @@ def cancelRegistration(registrationID):
         (registrationID,),
     )
     row = cursor.fetchone()
+
     if row is None:
         cursor.close()
         db.close()

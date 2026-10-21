@@ -52,7 +52,7 @@ def checkEmail(email: str):
 """
 Database functions
 """
-@participant_bp.post("/api/v1/participants/<str:name>/<str:email>")
+@participant_bp.post("/api/v1/participants/<string:name>/<string:email>")
 def createParticipant(name, email):
 	nameResponse = checkName(name)
 	if (nameResponse is not None):
