@@ -4,6 +4,7 @@ from db import get_db
 
 reg_bp = Blueprint("reg_bp", __name__)
 
+
 def event_exists(eventID: int, db) -> bool:
     cursor = db.cursor(dictionary=True)
     cursor.execute(
@@ -74,7 +75,6 @@ def registration_allowed(eventID: int, db) -> bool:
     if current_count >= event["capacity"]:
         return False
 
-    # startTime comes back as a datetime from the connector
     start_time = event["startTime"]
     if isinstance(start_time, str):
         try:
@@ -89,6 +89,53 @@ def registration_allowed(eventID: int, db) -> bool:
         return False
 
     return True
+
+
+@reg_bp.get("/api/v1/registrations")
+def listRegistrations():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        """
+        SELECT registrationID, eventID, userID, currentTime AS registeredAt
+        FROM registrations
+        ORDER BY registrationID
+        """
+    )
+    rows = cursor.fetchall()
+    cursor.close()
+    db.close()
+
+    for row in rows:
+        if row.get("registeredAt") and hasattr(row["registeredAt"], "strftime"):
+            row["registeredAt"] = row["registeredAt"].strftime("%Y-%m-%d %H:%M:%S")
+
+    return jsonify({"data": rows}), 200
+
+
+@reg_bp.get("/api/v1/registrations/<int:registrationID>")
+def getRegistration(registrationID):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        """
+        SELECT registrationID, eventID, userID, currentTime AS registeredAt
+        FROM registrations
+        WHERE registrationID = %s
+        """,
+        (registrationID,),
+    )
+    row = cursor.fetchone()
+    cursor.close()
+    db.close()
+
+    if row is None:
+        return jsonify({"error": "Registration does not exist"}), 404
+
+    if row.get("registeredAt") and hasattr(row["registeredAt"], "strftime"):
+        row["registeredAt"] = row["registeredAt"].strftime("%Y-%m-%d %H:%M:%S")
+
+    return jsonify({"data": row}), 200
 
 
 @reg_bp.post("/api/v1/registrations")
@@ -146,83 +193,28 @@ def registerEvent():
     return jsonify({"data": row}), 201
 
 
-@reg_bp.get("/api/v1/registrations")
-def listRegistrations():
+@reg_bp.delete("/api/v1/registrations/<int:registrationID>")
+def cancelRegistration(registrationID):
     db = get_db()
     cursor = db.cursor(dictionary=True)
+
+    # Check it exists first
     cursor.execute(
-        """
-        SELECT registrationID, eventID, userID, currentTime AS registeredAt
-        FROM registrations
-        ORDER BY registrationID
-        """
+        "SELECT registrationID FROM registrations WHERE registrationID = %s",
+        (registrationID,),
     )
-    rows = cursor.fetchall()
-    cursor.close()
-    db.close()
-
-    for row in rows:
-        if row.get("registeredAt") and hasattr(row["registeredAt"], "strftime"):
-            row["registeredAt"] = row["registeredAt"].strftime("%Y-%m-%d %H:%M:%S")
-
-    return jsonify({"data": rows}), 200
-
-
-@reg_bp.delete("/api/v1/registrations/<int:eventID>/<int:userID>")
-def cancelRegistration(eventID, userID):
-    db = get_db()
-
-    if not event_exists(eventID, db):
+    row = cursor.fetchone()
+    if row is None:
+        cursor.close()
         db.close()
-        return jsonify({"error": "Event does not exist"}), 404
-    if not participant_exists(userID, db):
-        db.close()
-        return jsonify({"error": "Participant does not exist"}), 404
+        return jsonify({"error": "Registration does not exist"}), 404
 
-    cursor = db.cursor(dictionary=True)
     cursor.execute(
-        """
-        DELETE FROM registrations
-        WHERE eventID = %s AND userID = %s
-        """,
-        (eventID, userID),
+        "DELETE FROM registrations WHERE registrationID = %s",
+        (registrationID,),
     )
-    deleted = cursor.rowcount
     db.commit()
     cursor.close()
     db.close()
 
-    if deleted == 0:
-        return jsonify({"error": "Registration does not exist"}), 404
-
     return jsonify({"message": "Registration successfully canceled"}), 200
-
-
-@reg_bp.get("/api/v1/registrations/events/<int:eventID>/participants")
-def listEventParticipants(eventID):
-    db = get_db()
-
-    if not event_exists(eventID, db):
-        db.close()
-        return jsonify({"error": "Event does not exist"}), 404
-
-    cursor = db.cursor(dictionary=True)
-    cursor.execute(
-        """
-        SELECT p.userID, p.name, p.email
-        FROM participants p
-        INNER JOIN registrations r ON p.userID = r.userID
-        WHERE r.eventID = %s
-        ORDER BY p.userID
-        """,
-        (eventID,),
-    )
-    rows = cursor.fetchall()
-    cursor.close()
-    db.close()
-
-    return jsonify({"data": rows}), 200
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
