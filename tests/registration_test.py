@@ -88,6 +88,50 @@ def test_create_registration_nonexistent_event(client, mocked_database):
     mock_connection.commit.assert_not_called()
 
 
+def test_create_registration_missing_or_null_body(client, mocked_database):
+    mock_get_db, mock_connection, mock_cursor = mocked_database
+
+    # completely missing body
+    response = client.post("/api/v1/registrations")
+    assert response.status_code == 400
+    mock_get_db.assert_not_called()
+
+    # explicit null
+    response = client.post("/api/v1/registrations", json=None)
+    assert response.status_code == 400
+    mock_get_db.assert_not_called()
+
+    # empty object
+    response = client.post("/api/v1/registrations", json={})
+    assert response.status_code == 400
+    mock_get_db.assert_not_called()
+
+    # missing userID
+    response = client.post("/api/v1/registrations", json={"eventID": 1})
+    assert response.status_code == 400
+    mock_get_db.assert_not_called()
+
+    # missing eventID
+    response = client.post("/api/v1/registrations", json={"userID": 1})
+    assert response.status_code == 400
+    mock_get_db.assert_not_called()
+
+    # null eventID
+    response = client.post(
+        "/api/v1/registrations",
+        json={"eventID": None, "userID": 1},
+    )
+    assert response.status_code == 400
+    mock_get_db.assert_not_called()
+
+    # null userID
+    response = client.post(
+        "/api/v1/registrations",
+        json={"eventID": 1, "userID": None},
+    )
+    assert response.status_code == 400
+    mock_get_db.assert_not_called()
+
 def test_create_registration_nonexistent_participant(client, mocked_database):
     mock_get_db, mock_connection, mock_cursor = mocked_database
     mock_cursor.fetchone.side_effect = [
@@ -256,3 +300,115 @@ def test_delete_nonexistent__registration(client, mocked_database):
 
     assert response.status_code == 404
     assert response.get_json() == {"error": "Registration does not exist"}
+
+def test_capacity_release_and_rebooking(client, mocked_database):
+    mock_get_db, mock_connection, mock_cursor = mocked_database
+    future = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S")
+
+    #1st registration (user 1)
+    mock_cursor.fetchone.side_effect = [
+        {"eventID": 10},
+        {"userID": 1},
+        None,
+        {"capacity": 2, "startTime": future},
+        {"current_registrations": 0},
+        {
+            "registrationID": 101,
+            "eventID": 10,
+            "userID": 1,
+            "registeredAt": datetime(2026, 10, 20, 12, 0, 0),
+        },
+    ]
+    mock_cursor.lastrowid = 101
+
+    response1 = client.post(
+        "/api/v1/registrations",
+        json={"eventID": 10, "userID": 1},
+    )
+    assert response1.status_code == 201
+    data1 = response1.get_json()["data"]
+    assert data1["registrationID"] == 101
+    assert data1["eventID"] == 10
+    assert data1["userID"] == 1
+    mock_connection.commit.assert_called()
+
+    #2nd registration (user 2)
+    mock_cursor.fetchone.side_effect = [
+        {"eventID": 10},
+        {"userID": 2},
+        None,
+        {"capacity": 2, "startTime": future},
+        {"current_registrations": 1},
+        {
+            "registrationID": 102,
+            "eventID": 10,
+            "userID": 2,
+            "registeredAt": datetime(2026, 10, 20, 12, 1, 0),
+        },
+    ]
+    mock_cursor.lastrowid = 102
+
+    response2 = client.post(
+        "/api/v1/registrations",
+        json={"eventID": 10, "userID": 2},
+    )
+    assert response2.status_code == 201
+    data2 = response2.get_json()["data"]
+    assert data2["registrationID"] == 102
+    assert data2["userID"] == 2
+
+    #3rd registration (user 3), rejection
+    mock_cursor.fetchone.side_effect = [
+        {"eventID": 10},
+        {"userID": 3},
+        None,
+        {"capacity": 2, "startTime": future},
+        {"current_registrations": 2},
+    ]
+
+    response3 = client.post(
+        "/api/v1/registrations",
+        json={"eventID": 10, "userID": 3},
+    )
+    assert response3.status_code == 400
+    assert response3.get_json() == {"error": "Event is full or has already started"}
+
+    #cancel user 1 (releases one seat)
+    mock_cursor.fetchone.side_effect = [
+        {"eventID": 10},
+        {"userID": 1},
+    ]
+    mock_cursor.rowcount = 1
+
+    cancel_response = client.delete("/api/v1/registrations/10/1")
+    assert cancel_response.status_code == 200
+    assert cancel_response.get_json() == {
+        "message": "Registration successfully canceled"
+    }
+    mock_connection.commit.assert_called()
+
+    #user 3 can register (one seat free)
+    mock_cursor.fetchone.side_effect = [
+        {"eventID": 10},
+        {"userID": 3},
+        None,
+        {"capacity": 2, "startTime": future},
+        {"current_registrations": 1},
+        {
+            "registrationID": 103,
+            "eventID": 10,
+            "userID": 3,
+            "registeredAt": datetime(2026, 10, 20, 12, 5, 0),
+        },
+    ]
+    mock_cursor.lastrowid = 103
+
+    response3_again = client.post(
+        "/api/v1/registrations",
+        json={"eventID": 10, "userID": 3},
+    )
+    assert response3_again.status_code == 201
+    data3 = response3_again.get_json()["data"]
+    assert data3["registrationID"] == 103
+    assert data3["eventID"] == 10
+    assert data3["userID"] == 3
