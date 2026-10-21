@@ -312,9 +312,15 @@ def test_capacity_release_and_rebooking(client, mocked_database):
     assert response3.get_json() == {"error": "Event is full or has already started"}
 
     # cancel user 1 (releases one seat)
+    mock_cursor.fetchone.side_effect = None
     mock_cursor.fetchone.return_value = {"registrationID": 101}
     mock_cursor.rowcount = 1
+
     cancel_response = client.delete("/api/v1/registrations/101")
+    assert cancel_response.status_code == 200
+    assert cancel_response.get_json() == {
+    "message": "Registration successfully canceled"
+}
     assert cancel_response.status_code == 200
     assert cancel_response.get_json() == {
         "message": "Registration successfully canceled"
