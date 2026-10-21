@@ -106,6 +106,11 @@ Participants are fictional records preloaded using a seed script. Creating new p
 
 Use the preloaded participant IDs when testing endpoints that require a participant ID. (*Refer to the seed data for the complete list of available participants.*)
 
+Example database format for Participant class: *the userID will be indexed by 1* 
+| **userID** | **name** | **email** |
+| :--- | :--- | :--- |
+| 1 | Jane Doe | janedoe@email.com |
+
 ### 7. Running Tests
 
 All tests use Flask to send requests to the API and verify the expected responses.
@@ -114,9 +119,10 @@ All tests use Flask to send requests to the API and verify the expected response
 
 **Working directory:** Project root directory, where `main.py` and the `tests/` folder are located.
 
-#### Running Tests for Individual Classes
+### Running Integration Tests vs. Isolated Tests
 
-Run the tests for each class separately:
+**Isolated tests** verify individual components or functions independently, often using mocks to avoid relying on external components such as a database.
+- Run the tests for each class separately:
 
 ```bash
 python -m pytest -v tests/events_test.py
@@ -124,8 +130,7 @@ python -m pytest -v tests/registration_test.py
 python -m pytest -v tests/participant_test.py
 ```
 
-### Running Integration Tests
-Integration tests verify that multiple components work together, such as API endpoints interacting with the database or mock database.
+**Integration tests** verify that multiple components work together correctly, such as API endpoints interacting with a database or mock database.
 
 Run all tests:
 
