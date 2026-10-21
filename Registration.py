@@ -1,10 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Blueprint, request, jsonify
 from datetime import datetime
 from db import get_db
 import json
 
-app = Flask(__name__)
-
+reg_bp = Blueprint('reg_bp', __name__)
 
 #declaring INSTANCES (unique copies, not global variables) 
 class Registration:
@@ -167,7 +166,7 @@ def timeValid(time: str, currentTime: str) -> bool:
 
 
 # POST: Register a participant for an event
-@app.post("/api/v1/registrations")
+@reg_bp.post("/api/v1/registrations")
 def registerEvent():
     body = request.get_json(silent=True) or {}
 
@@ -228,7 +227,7 @@ def registerEvent():
 
 
 # GET: List all registrations
-@app.get("/api/v1/registrations")
+@reg_bp.get("/api/v1/registrations")
 def listRegistrations():
     registrations = loadDatabase()
 
@@ -241,7 +240,7 @@ def listRegistrations():
 
 
 # DELETE: Cancel a participant's registration
-@app.delete("/api/v1/registrations/<int:eventID>/<int:userID>")
+@reg_bp.delete("/api/v1/registrations/<int:eventID>/<int:userID>")
 def cancelRegistration(eventID, userID):
     registrations = loadDatabase()
     events = loadEvents()
@@ -271,7 +270,7 @@ def cancelRegistration(eventID, userID):
 
 
 # GET: List participants registered for an event
-@app.get("/api/v1/registrations/events/<int:eventID>/participants")
+@reg_bp.get("/api/v1/registrations/events/<int:eventID>/participants")
 def listEventParticipants(eventID):
     events = loadEvents()
     participants = loadParticipants()

@@ -1,8 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Blueprint, request, jsonify
 import json
 import re
 
-app = Flask(__name__)
+participant_bp = Blueprint('participant_bp', __name__)
 
 class Participant:
 	__slots__ = ("userID", "name", "email")
@@ -109,7 +109,7 @@ def checkParticipant(name: str, email: str) -> bool:
 """
 Database functions
 """
-@app.post("/api/v1/participants")
+@participant_bp.post("/api/v1/participants")
 def createParticipant():
 	body = request.get_json(silent=True) or {}
 	
@@ -146,7 +146,7 @@ def createParticipant():
 	
 	return jsonify({"data": newParticipant.toDict()}), 201
 
-@app.get("/api/v1/participants")
+@participant_bp.get("/api/v1/participants")
 def listParticipants():
 	participants = loadParticipantDatabase()
 	
@@ -157,7 +157,7 @@ def listParticipants():
 		]
 	}), 200
 
-@app.get("/api/v1/participants/<int:userID>")
+@participant_bp.get("/api/v1/participants/<int:userID>")
 def retrieveParticipant(userID: int):
 	participants = loadParticipantDatabase()
 	for p in participants:
@@ -167,7 +167,7 @@ def retrieveParticipant(userID: int):
 	return jsonify({"error": f"No participant found with id {userID}"}), 404
 
 
-@app.delete("/api/v1/participants/<int:userID>")
+@participant_bp.delete("/api/v1/participants/<int:userID>")
 def deleteParticipant(userID):
 	participants = loadParticipantDatabase()
 	if (not participantExists(userID, participants)):
@@ -175,7 +175,7 @@ def deleteParticipant(userID):
 
 	# Finish me
 
-@app.put("/api/v1/participants/<int:userID>")
+@participant_bp.put("/api/v1/participants/<int:userID>")
 def updateParticipant(userID):
 	body = request.get_json(silent=True) or {}
 	userID = body.get("userID")
