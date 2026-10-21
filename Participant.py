@@ -1,6 +1,5 @@
-from flask import Blueprint, request, jsonify
+from flask import Flask, request, jsonify
 from db import get_db
-import json
 import re
 
 participant_bp = Flask(__name__)

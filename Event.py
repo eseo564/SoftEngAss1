@@ -112,18 +112,20 @@ def deleteEvent(eventID):
 
     cursor.execute(
         """
-        SELECT capacity FROM events
+        SELECT COUNT(*) AS registration_count
+        FROM registrations
         WHERE eventID = %s
         """,
         (eventID,),
     )
-    event = cursor.fetchone()
 
-    if event["capacity"] != 0:
+    result = cursor.fetchone()
+
+    if result["registration_count"] > 0:
         cursor.close()
         db.close()
         return jsonify({
-            "error": "Cannot delete event because capacity is not 0"
+            "error": "Cannot delete an event with existing registrations"
         }), 400
 
     cursor.execute(
@@ -173,7 +175,7 @@ def updateEvent(eventID):
     cursor.execute(
         """
         UPDATE events
-        SET name = %s, startTime = %s, capicity = %s, location = %s
+        SET name = %s, startTime = %s, capacity = %s, location = %s
         WHERE eventID = %s
         """,
         (str(name).strip(), startTime, capacity, str(location).strip(), eventID)
@@ -239,7 +241,6 @@ def checkCapacity(eventID, capacity, db):
         return jsonify({"error": "changing amount lower than registered amount"}),400
 
     cursor.close()
-    db.close()
     return None
 
 
