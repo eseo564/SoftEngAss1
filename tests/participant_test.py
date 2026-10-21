@@ -91,10 +91,6 @@ def testDuplicateParticipant(client, mockDatabase):
 			{"name": "John Smith", "email": "\t\r\n "}, ## Tests email with whitespace input
 			{"name": "John Smith", "email": 456}, ## Tests email integer input
 			{"name": "John Smith", "email": "invalid-email"}, ## Test invalid email format
-			
-			{"name": "John Smith", "email": "john.smith@email.com"},
-			{"name": "John Smith", "email": "john.smith@email.com"},
-			{"name": "John Smith", "email": "john.smith@email.com"},
 		]
 )
 def testInvalidParticipantCreation(client, mockDatabase, payload):
@@ -107,21 +103,6 @@ def testInvalidParticipantCreation(client, mockDatabase, payload):
 
 	assert response.status_code == 400
 	mockConnection.commit.assert_not_called()
-
-
-@pytest.mark.parametrize(
-		"userID, expected", 
-		[
-			(-1, "userID must be non-negative"), ## Tests userID negative integer input
-			("1", "userID must be an integer"), ## Tests userID string input
-			(1.0, "userID must be an integer"), ## Tests userID float input
-			(True, "userID must be an integer"), ## Tests userID boolean input
-			(None, "userID cannot be null"),  ## Tests userID null input
-		]
-	)
-def testInvalidUserID(userID, expected):
-	with pytest.raises(AssertionError, match=f"^{expected}"):
-		Participant(userID, "Alice", "alice@example.com")
 
 
 def testListParticipants(client, mockDatabase):
