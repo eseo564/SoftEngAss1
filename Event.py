@@ -112,6 +112,22 @@ def deleteEvent(eventID):
 
     cursor.execute(
         """
+        SELECT capacity FROM events
+        WHERE eventID = %s
+        """,
+        (eventID,),
+    )
+    event = cursor.fetchone()
+
+    if event["capacity"] != 0:
+        cursor.close()
+        db.close()
+        return jsonify({
+            "error": "Cannot delete event because capacity is not 0"
+        }), 400
+
+    cursor.execute(
+        """
         DELETE FROM events
         WHERE eventID = %s
         """,
