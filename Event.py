@@ -1,12 +1,13 @@
-from flask import Flask, request, jsonify
+from flask import Blueprint, request, jsonify
+# Flask
 from db import get_db
 #from mock_db import get_db, add_event
 from datetime import datetime
 
-app = Flask(__name__)
+event_bp = Blueprint('event_bp', __name__)
 
 # added create
-@app.post("/api/v1/events")
+@event_bp.post("/api/v1/events")
 def createEvent():
     body = request.get_json(silent=True) or {}
     name = body.get("name")
@@ -44,8 +45,8 @@ def createEvent():
 
     return jsonify(event), 201
 
-
-@app.get("/api/v1/events")
+@event_bp.route("/api/v1/events")
+#app.get("/api/v1/events")
 def listEvents():
     name_query = request.args.get("name")
     db = get_db()
@@ -76,7 +77,7 @@ def listEvents():
     db.close()
     return jsonify({"data": events}), 200
 
-@app.get("/api/v1/events/<int:eventID>")
+@event_bp.get("/api/v1/events/<int:eventID>")
 def retrieveEvent(eventID):
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -97,7 +98,7 @@ def retrieveEvent(eventID):
 
     return jsonify({"data": row}), 200
 
-@app.delete("/api/v1/events/<int:eventID>")
+@event_bp.delete("/api/v1/events/<int:eventID>")
 def deleteEvent(eventID):
     db = get_db()
     cursor = db.cursor(dictionary=True)
@@ -126,7 +127,7 @@ def deleteEvent(eventID):
         "message": f"Event {eventID} successfully deleted"
     }), 200
 
-@app.put("/api/v1/events/<int:eventID>")
+@event_bp.put("/api/v1/events/<int:eventID>")
 def updateEvent(eventID):
     body = request.get_json(silent=True) or {}
     name = body.get("name")
@@ -251,6 +252,3 @@ def checkReqs(name, startTime, capacity, location):
 
     except ValueError:
         return jsonify({"error": "wrong time format (YYYY/MM/DD XX:XX)"}),400
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
