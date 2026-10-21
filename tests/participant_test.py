@@ -40,7 +40,7 @@ def mockDB():
 			(1, "John Smith ", "\t\r\v\n john.smith@email.com"),
 			(1, "John Smith ", "john.smith@email.com"),
 		]
-)
+	)
 def testConstructorInputs(userID: int, name: str, email: str):
 	p = Participant(userID, name, email)
 	assert p.userID == userID
@@ -103,3 +103,6 @@ def testParticipantEquality():
 	assert a == b
 	assert a != c
 	assert a != object()
+
+
+
