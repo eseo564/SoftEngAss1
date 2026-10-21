@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, patch
 
+from flask import Flask
 import Participant as apiModule
 from Participant import participant_bp as flaskApp
 import pytest
@@ -7,8 +8,10 @@ import pytest
 
 @pytest.fixture()
 def client():
-	flaskApp.config.update(TESTING=True)
-	with flaskApp.test_client() as testClient:
+	app = Flask(__name__)
+	app.register_blueprint(flaskApp)
+	app.config.update(TESTING=True)
+	with app.test_client() as testClient:
 		yield testClient
 
 @pytest.fixture()
