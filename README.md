@@ -154,9 +154,6 @@ python -m pytest -v tests/
 | :--- | :--- | :--- |
 | `GET` | `/api/v1/participants` | Returns all participants |
 | `GET` | `/api/v1/participants/<participantID>` | Returns details of a specific participant |
-| `POST` | `/api/v1/participants` | Creates a new participant  |
-| `PATCH` | `/api/v1/participants/<participantID>` | Updates an existing participant |
-| `DELETE` | `/api/v1/participants/<participantID>` | Deletes an existing participant |
 
 ### Registration class
 | **Method** | **URL** | **Purpose** |
