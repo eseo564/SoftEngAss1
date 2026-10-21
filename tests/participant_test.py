@@ -34,11 +34,11 @@ def mockDB():
 @pytest.mark.parametrize(
 		"userID, name, email", 
 		[
-			(0, "John Smith", "john.smith@email.co.uk"),
-			(1000000, "\t\r\v\nJohn Smith        ", "john.smith@example.com"),
-			(1, "John Smith\t\r\v\n ", "john.smith@email.com"),
-			(1, "John Smith ", "\t\r\v\n john.smith@email.com"),
-			(1, "John Smith ", "john.smith@email.com"),
+			(0, "John Smith", "john.smith@email.co.uk"), ## Tests userID valid low end
+			(1000000, "John Smith", "john.smith@example.com"), ## Tests high userID
+			(1, " John Smith\t\r\v\n ", "john.smith@email.com"), ## Tests name with whitespace
+			(1, "John Smith ", "\t\n john.smith@email.com\r\v"), ## Tests email with whitespace
+			(1, "John Smith", "john.smith@email.com"), ## Tests 'normal' user creation
 		]
 	)
 def testConstructorInputs(userID: int, name: str, email: str):
@@ -51,11 +51,11 @@ def testConstructorInputs(userID: int, name: str, email: str):
 @pytest.mark.parametrize(
 		"userID, expected", 
 		[
-			("1", "userID must be an integer"),
-			(1.0, "userID must be an integer"),
-			(True, "userID must be an integer"),
-			(-1, "userID must be non-negative"),
-			(None, "userID cannot be null"),
+			(-1, "userID must be non-negative"), ## Tests userID negative integer input
+			("1", "userID must be an integer"), ## Tests userID string input
+			(1.0, "userID must be an integer"), ## Tests userID float input
+			(True, "userID must be an integer"), ## Tests userID boolean input
+			(None, "userID cannot be null"),  ## Tests userID null input
 		]
 	)
 def testInvalidUserID(userID, expected):
@@ -66,12 +66,12 @@ def testInvalidUserID(userID, expected):
 @pytest.mark.parametrize(
 		"name, expected", 
 		[
-			("", "Cannot have blank name"),
-			("\t\n\r", "Cannot have blank name"),
-			(1.0, "name must be a string"),
-			(True, "name must be a string"),
-			(-1, "name must be a string"),
-			(None, "name cannot be null"),
+			("", "Cannot have blank name"), ## Tests empty name input
+			("\t\n\r", "Cannot have blank name"), ## Tests name with (only) whitespace input
+			(1.0, "name must be a string"), ## Tests name float input
+			(True, "name must be a string"), ## Tests name boolean input
+			(-1, "name must be a string"), ## Tests name integer input
+			(None, "name cannot be null"), ## Tests name null input
 		]
 	)
 def testInvalidName(name, expected):
@@ -82,12 +82,12 @@ def testInvalidName(name, expected):
 @pytest.mark.parametrize(
 		"email, expected", 
 		[
-			("", "Cannot have blank email"),
-			("\t\n\r ", "Cannot have blank email"),
-			(1.0, "email must be a string"),
-			(True, "email must be a string"),
-			(-1, "email must be a string"),
-			(None, "email cannot be null"),
+			("", "Cannot have blank email"), ## Tests empty email input
+			("\t\n\r ", "Cannot have blank email"), ## Tests email with (only) whitespace input
+			(1.0, "email must be a string"), ## Tests email float input
+			(True, "email must be a string"), ## Tests email boolean input
+			(-1, "email must be a string"), ## Tests email integer input
+			(None, "email cannot be null"), ## Tests email null input
 		]
 	)
 def testInvalidEmail(email, expected):
