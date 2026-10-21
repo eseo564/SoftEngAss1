@@ -1,8 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Blueprint, request, jsonify
 from db import get_db
 import re
 
-participant_bp = Flask(__name__)
+participant_bp = Blueprint('participant_bp', __name__)
 
 """
 Helper functions
