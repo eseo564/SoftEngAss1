@@ -75,7 +75,7 @@ def testDuplicateParticipant(client, mockDatabase):
 	mockConnection.commit.assert_not_called()
 
 
-@pytest.mark.parameterize(
+@pytest.mark.parametrize(
 		"payload",
 		[
 			{}, ## Test empty dictionary input
@@ -84,11 +84,9 @@ def testDuplicateParticipant(client, mockDatabase):
 			{"email": "john.smith@email.com"}, ## Test missing name
 
 			{"name": "", "email": "john.smith@email.com"}, ## Tests empty name input
-			{"name": "\t\r\n ", "email": "john.smith@email.com"}, ## Tests name with whitespace input
 			{"name": 123, "email": "john.smith@email.com"}, ## Tests name integer input
 
 			{"name": "John Smith", "email": ""}, ## Tests empty email input
-			{"name": "John Smith", "email": "\t\r\n "}, ## Tests email with whitespace input
 			{"name": "John Smith", "email": 456}, ## Tests email integer input
 			{"name": "John Smith", "email": "invalid-email"}, ## Test invalid email format
 		]

@@ -1,8 +1,8 @@
-from flask import Flask, request, jsonify
+from flask import Blueprint, request, jsonify
 from db import get_db
 import re
 
-participant_bp = Flask(__name__)
+participant_bp = Blueprint("participant_bp", __name__)
 
 """
 Helper functions
@@ -31,16 +31,16 @@ def participantExists2(name: str, email: str, db) -> bool:
 	return row is not None
 
 
-def checkParticipant(name: str, email: str) -> bool:
+def checkParticipant(name: str, email: str) -> tuple | None:
 	if (not isinstance(name, str)):
 		return jsonify({"error": "name must be a string"}), 400
-	if (len(name.strip()) == 0):
+	if (name.strip() == ""):
 		return jsonify({"error": "name is required"}), 400
 
 	## Check for valid email
 	if (not isinstance(email, str)):
 		return jsonify({"error": "email must be a string"}), 400
-	if (len(email.strip()) == 0):
+	if (email.strip() == ""):
 		return jsonify({"error": "email is required"}), 400
 	pattern = r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
 	if (not bool(re.match(pattern, email))):
@@ -63,7 +63,7 @@ def createParticipant():
 
 	## Validate Participant's name/email
 	response = checkParticipant(name, email)
-	if (response):
+	if (response is not None):
 		return response
 
 	if participantExists2(name, email, db):
@@ -170,7 +170,7 @@ def updateParticipant(userID):
 
 	## Check if input is correct
 	errorResponse = checkParticipant(name, email)
-	if (errorResponse):
+	if (errorResponse is not None):
 		return errorResponse
 
 	db = get_db()
