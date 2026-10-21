@@ -52,12 +52,15 @@ def checkEmail(email: str):
 """
 Database functions
 """
-@participant_bp.post("/api/v1/participants")
-def createParticipant():
-	body = request.get_json(silent=True) or {}
-	
-	name = body.get("name")
-	email = body.get("email")
+@participant_bp.post("/api/v1/participants/<str:name>/<str:email>")
+def createParticipant(name, email):
+	nameResponse = checkName(name)
+	if (nameResponse is not None):
+		return nameResponse
+
+	emailResponse = checkEmail(email)
+	if (emailResponse is not None):
+		return emailResponse
 
 	db = get_db()
 
