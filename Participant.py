@@ -34,13 +34,13 @@ def participantExists2(name: str, email: str, db) -> bool:
 def checkParticipant(name: str, email: str) -> tuple | None:
 	if (not isinstance(name, str)):
 		return jsonify({"error": "name must be a string"}), 400
-	if (len(name.strip()) == 0):
+	if (name.strip() == ""):
 		return jsonify({"error": "name is required"}), 400
 
 	## Check for valid email
 	if (not isinstance(email, str)):
 		return jsonify({"error": "email must be a string"}), 400
-	if (len(email.strip()) == 0):
+	if (email.strip() == ""):
 		return jsonify({"error": "email is required"}), 400
 	pattern = r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
 	if (not bool(re.match(pattern, email))):
