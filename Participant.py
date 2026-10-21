@@ -31,13 +31,14 @@ def participantExists2(name: str, email: str, db) -> bool:
 	return row is not None
 
 
-def checkParticipant(name: str, email: str) -> tuple | None:
-	if (not isinstance(name, str)):
+def checkName(name: str):
+	if (type(name) is not str):
 		return jsonify({"error": "name must be a string"}), 400
 	if (name.strip() == ""):
 		return jsonify({"error": "name is required"}), 400
+	return None
 
-	## Check for valid email
+def checkEmail(email: str):
 	if (not isinstance(email, str)):
 		return jsonify({"error": "email must be a string"}), 400
 	if (email.strip() == ""):
@@ -45,7 +46,6 @@ def checkParticipant(name: str, email: str) -> tuple | None:
 	pattern = r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
 	if (not bool(re.match(pattern, email))):
 		return jsonify({"error": "Invalid email format"}), 400
-
 	return None
 
 
@@ -62,9 +62,13 @@ def createParticipant():
 	db = get_db()
 
 	## Validate Participant's name/email
-	response = checkParticipant(name, email)
-	if (response is not None):
-		return response
+	nameResponse = checkName(name)
+	if (nameResponse is not None):
+		return nameResponse
+	
+	emailResponse = checkEmail(email)
+	if (emailResponse is not None):
+		return emailResponse
 
 	if participantExists2(name, email, db):
 		return jsonify({"error": f"Participant with name '{name}' and email '{email}' already exists"}), 409
@@ -169,9 +173,13 @@ def updateParticipant(userID):
 	email = body.get("email").strip()
 
 	## Check if input is correct
-	errorResponse = checkParticipant(name, email)
-	if (errorResponse is not None):
-		return errorResponse
+	nameResponse = checkName(name)
+	if (nameResponse is not None):
+		return nameResponse
+	
+	emailResponse = checkEmail(email)
+	if (emailResponse is not None):
+		return emailResponse
 
 	db = get_db()
 
@@ -199,3 +207,5 @@ def updateParticipant(userID):
 
 if (__name__ == "__main__"):
 	participant_bp.run(host="0.0.0.0", port=5000, debug=True)
+
+## 9+10=21

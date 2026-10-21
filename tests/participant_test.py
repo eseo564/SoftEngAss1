@@ -79,7 +79,7 @@ def testDuplicateParticipant(client, mockDatabase):
 @pytest.mark.parametrize(
 		"payload",
 		[
-			{}, ## Test empty dictionary input
+			{}, ## Test empty input
 
 			{"name": "John Smith"}, ## Test missing email
 			{"email": "john.smith@email.com"}, ## Test missing name
