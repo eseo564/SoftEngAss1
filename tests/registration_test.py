@@ -198,73 +198,46 @@ def test_create_registration_invalid_ids(client, mocked_database, payload):
 
 
 def test_get_registrations(client, mocked_database):
+    """GET /api/v1/registrations/<registrationID> – success"""
     mock_get_db, mock_connection, mock_cursor = mocked_database
-    mock_cursor.fetchall.return_value = [
-        {
-            "registrationID": 1,
-            "eventID": 1,
-            "userID": 1,
-            "registeredAt": datetime(2026, 10, 1, 12, 0, 0),
-        }
-    ]
-    response = client.get("/api/v1/registrations")
-    assert response.status_code == 200
-    body = response.get_json()
-    assert "data" in body
-    assert len(body["data"]) == 1
-    assert body["data"][0]["registrationID"] == 1
-    assert body["data"][0]["registeredAt"] == "2026-10-01 12:00:00"
-    mock_get_db.assert_called_once_with()
-    mock_connection.cursor.assert_called_once_with(dictionary=True)
-    mock_cursor.close.assert_called_once_with()
-    mock_connection.close.assert_called_once_with()
-
-
-def test_get_event_participants(client, mocked_database):
-    mock_get_db, mock_connection, mock_cursor = mocked_database
-    mock_cursor.fetchone.return_value = {"eventID": 1}
-    mock_cursor.fetchall.return_value = [
-        {"userID": 1, "name": "Jane Doe", "email": "jane@example.com"}
-    ]
-    response = client.get("/api/v1/registrations/events/1/participants")
-    assert response.status_code == 200
-    assert response.get_json() == {
-        "data": [
-            {"userID": 1, "name": "Jane Doe", "email": "jane@example.com"}
-        ]
+    mock_cursor.fetchone.return_value = {
+        "registrationID": 1,
+        "eventID": 1,
+        "userID": 1,
+        "registeredAt": datetime(2026, 10, 15, 10, 30, 0),
     }
-    mock_get_db.assert_called()
+    response = client.get("/api/v1/registrations/1")
+    assert response.status_code == 200
+    data = response.get_json()["data"]
+    assert data["registrationID"] == 1
+    assert data["eventID"] == 1
+    assert data["userID"] == 1
+    assert data["registeredAt"] == "2026-10-15 10:30:00"
 
-
-def test_get_participants_nonexistent_event(client, mocked_database):
+def test_get_registration_not_found(client, mocked_database):
+    """GET /api/v1/registrations/<registrationID> – 404"""
     mock_get_db, mock_connection, mock_cursor = mocked_database
     mock_cursor.fetchone.return_value = None
-    response = client.get("/api/v1/registrations/events/999/participants")
+    response = client.get("/api/v1/registrations/999")
     assert response.status_code == 404
-    assert response.get_json() == {"error": "Event does not exist"}
-
+    assert response.get_json() == {"error": "Registration does not exist"}
 
 def test_delete_registration(client, mocked_database):
+    """DELETE /api/v1/registrations/<registrationID> – success"""
     mock_get_db, mock_connection, mock_cursor = mocked_database
-    mock_cursor.fetchone.side_effect = [
-        {"eventID": 1},
-        {"userID": 1},
-    ]
+    mock_cursor.fetchone.return_value = {"registrationID": 1}
     mock_cursor.rowcount = 1
-    response = client.delete("/api/v1/registrations/1/1")
+    response = client.delete("/api/v1/registrations/1")
     assert response.status_code == 200
     assert response.get_json() == {"message": "Registration successfully canceled"}
     mock_connection.commit.assert_called_once_with()
 
 
 def test_delete_nonexistent__registration(client, mocked_database):
+    """DELETE /api/v1/registrations/<registrationID> – 404"""
     mock_get_db, mock_connection, mock_cursor = mocked_database
-    mock_cursor.fetchone.side_effect = [
-        {"eventID": 1},
-        {"userID": 999},
-    ]
-    mock_cursor.rowcount = 0
-    response = client.delete("/api/v1/registrations/1/999")
+    mock_cursor.fetchone.return_value = None
+    response = client.delete("/api/v1/registrations/999")
     assert response.status_code == 404
     assert response.get_json() == {"error": "Registration does not exist"}
 
@@ -339,18 +312,14 @@ def test_capacity_release_and_rebooking(client, mocked_database):
     assert response3.get_json() == {"error": "Event is full or has already started"}
 
     # cancel user 1 (releases one seat)
-    mock_cursor.fetchone.side_effect = [
-        {"eventID": 10},
-        {"userID": 1},
-    ]
+    mock_cursor.fetchone.return_value = {"registrationID": 101}
     mock_cursor.rowcount = 1
-    cancel_response = client.delete("/api/v1/registrations/10/1")
+    cancel_response = client.delete("/api/v1/registrations/101")
     assert cancel_response.status_code == 200
     assert cancel_response.get_json() == {
         "message": "Registration successfully canceled"
     }
     mock_connection.commit.assert_called()
-
     # user 3 can now register
     mock_cursor.fetchone.side_effect = [
         {"eventID": 10},
